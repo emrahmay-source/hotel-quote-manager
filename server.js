@@ -184,22 +184,53 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ error: 'Lütfen bir Excel dosyası yükleyin.' });
     }
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
-    const sheetName = workbook.SheetNames[0];
-    if (!sheetName) {
+
+    const workbook = XLSX.read(req.file.buffer, {
+      type: 'buffer',
+      cellDates: true
+    });
+
+    const sheetNames = workbook.SheetNames;
+
+    if (!sheetNames.length) {
       return res.status(400).json({ error: 'Excel dosyasında sayfa bulunamadı.' });
     }
-    const sheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+    // Şimdilik ilk sekmeyi kullanıyoruz.
+    // Bir sonraki sprintte kullanıcı seçebilecek.
+    const selectedSheet = sheetNames[0];
+
+    const sheet = workbook.Sheets[selectedSheet];
+
+    const jsonData = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      defval: ''
+    });
+
     if (jsonData.length === 0) {
       return res.status(400).json({ error: 'Excel dosyası boş.' });
     }
-    const headers = jsonData[0].map((h) => (h != null ? String(h).trim() : ''));
-    const data = jsonData.slice(1).filter((row) =>
-      row.some((cell) => cell !== '' && cell != null)
+
+    const headers = jsonData[0].map(h =>
+      h != null ? String(h).trim() : ''
     );
+
+    const data = jsonData
+      .slice(1)
+      .filter(row =>
+        row.some(cell => cell !== '' && cell != null)
+      );
+
     const suggestedMapping = suggestColumnMapping(headers);
-    res.json({ headers, data, suggestedMapping });
+
+    res.json({
+      sheetNames,
+      selectedSheet,
+      headers,
+      data,
+      suggestedMapping
+    });
+
   } catch (err) {
     next(err);
   }
