@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Otel Fiyat Teklif Yönetimi</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- ═══════════════════ HEADER BAR ═══════════════════ -->
+  <header class="header-bar">
+    <div class="header-left">
+      <div class="hotel-logo">🏨</div>
+      <h1 class="hotel-name" id="headerHotelName">Otel Adı</h1>
+    </div>
+    <div class="header-center">
+      <div class="header-date" id="headerDate"></div>
+      <div class="exchange-ticker" id="exchangeTicker">
+        <span class="ticker-label">Döviz:</span>
+        <span class="ticker-item" id="tickerEUR">
+          <span class="ticker-flag">🇪🇺</span> EUR <span class="ticker-value">—</span>
+        </span>
+        <span class="ticker-separator">|</span>
+        <span class="ticker-item" id="tickerUSD">
+          <span class="ticker-flag">🇺🇸</span> USD <span class="ticker-value">—</span>
+        </span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-icon settings-toggle" id="btnOpenSettings" title="Ayarlar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ SETTINGS SIDEBAR ═══════════════════ -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="settings-sidebar" id="settingsSidebar">
+    <div class="sidebar-header">
+      <h2>⚙️ Ayarlar</h2>
+      <button class="btn-icon sidebar-close" id="btnCloseSettings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="sidebar-body">
+      <div class="form-group">
+        <label for="settingsHotelName">Otel Adı</label>
+        <input type="text" id="settingsHotelName" class="form-input" placeholder="Otel adını giriniz">
+      </div>
+      <div class="form-group">
+        <label for="settingsPhone">Telefon Numarası</label>
+        <input type="tel" id="settingsPhone" class="form-input" placeholder="+90 5XX XXX XX XX">
+      </div>
+
+      <div class="sidebar-divider"></div>
+      <h3 class="sidebar-section-title">OTA Otel Sayfası Linkleri</h3>
+
+      <div class="form-group">
+        <label for="settingsBookingUrl">
+          <span class="ota-dot" style="background:var(--booking-color)"></span> Booking.com URL
+        </label>
+        <input type="url" id="settingsBookingUrl" class="form-input" placeholder="https://www.booking.com/hotel/...">
+      </div>
+      <div class="form-group">
+        <label for="settingsExpediaUrl">
+          <span class="ota-dot" style="background:var(--expedia-color)"></span> Expedia URL
+        </label>
+        <input type="url" id="settingsExpediaUrl" class="form-input" placeholder="https://www.expedia.com/...">
+      </div>
+      <div class="form-group">
+        <label for="settingsHotelsUrl">
+          <span class="ota-dot" style="background:var(--hotels-color)"></span> Hotels.com URL
+        </label>
+        <input type="url" id="settingsHotelsUrl" class="form-input" placeholder="https://www.hotels.com/...">
+      </div>
+      <div class="form-group">
+        <label for="settingsEtsUrl">
+          <span class="ota-dot" style="background:var(--etstur-color)"></span> ETS Tur URL
+        </label>
+        <input type="url" id="settingsEtsUrl" class="form-input" placeholder="https://www.etstur.com/...">
+      </div>
+      <div class="form-group">
+        <label for="settingsTatilbudurUrl">
+          <span class="ota-dot" style="background:var(--tatilbudur-color)"></span> Tatilbudur URL
+        </label>
+        <input type="url" id="settingsTatilbudurUrl" class="form-input" placeholder="https://www.tatilbudur.com/...">
+      </div>
+
+      <!-- Custom OTAs Container -->
+      <div id="customOtaContainer"></div>
+      <button class="btn-secondary btn-add-ota" id="btnAddOta">
+        <span>+</span> Acenta Ekle
+      </button>
+
+      <div class="sidebar-divider"></div>
+      <h3 class="sidebar-section-title">Gelişmiş Ayarlar</h3>
+
+      <div class="form-group">
+        <label for="settingsProxy">Booking.com Proxy</label>
+        <input type="text" id="settingsProxy" class="form-input" placeholder="socks5://user:pass@host:port">
+      </div>
+
+      <button class="btn-primary btn-save-settings" id="btnSaveSettings">
+        💾 Ayarları Kaydet
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+  <main class="main-content">
+
+    <!-- ─── SEARCH FORM ─── -->
+    <section class="search-section">
+      <div class="section-header">
+        <h2>🔍 Fiyat Araması</h2>
+        <p class="section-subtitle">Tarih, misafir ve pansiyon bilgilerini girerek karşılaştırmalı fiyat arayın</p>
+      </div>
+
+      <div class="search-form glass-card">
+        <!-- Date Row -->
+        <div class="form-row form-row-dates">
+          <div class="form-group">
+            <label for="checkinDate">📅 Giriş Tarihi</label>
+            <input type="text" id="checkinDate" class="form-input date-input" placeholder="Giriş tarihi seçin" readonly>
+          </div>
+          <div class="form-group">
+            <label for="checkoutDate">📅 Çıkış Tarihi</label>
+            <input type="text" id="checkoutDate" class="form-input date-input" placeholder="Çıkış tarihi seçin" readonly>
+          </div>
+          <div class="form-group night-count-group">
+            <label>🌙 Gece</label>
+            <div class="night-badge" id="nightBadge">0</div>
+          </div>
+        </div>
+
+        <!-- Guest Row -->
+        <div class="form-row form-row-guests">
+          <div class="form-group">
+            <label>👤 Yetişkin</label>
+            <div class="stepper">
+              <button class="stepper-btn stepper-minus" data-target="adultCount" data-min="1">−</button>
+              <span class="stepper-value" id="adultCount">2</span>
+              <button class="stepper-btn stepper-plus" data-target="adultCount" data-max="10">+</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>👶 Çocuk</label>
+            <div class="stepper">
+              <button class="stepper-btn stepper-minus" data-target="childCount" data-min="0">−</button>
+              <span class="stepper-value" id="childCount">0</span>
+              <button class="stepper-btn stepper-plus" data-target="childCount" data-max="6">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board Type -->
+        <div class="form-row form-row-board">
+          <label class="form-label-full">🍽️ Pansiyon Tipi</label>
+          <div class="checkbox-group" id="boardTypeGroup">
+            <label class="custom-checkbox">
+              <input type="checkbox" name="boardType" value="room_only">
+              <span class="checkbox-mark"></span>
+              <span class="checkbox-label">Sadece Oda</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" name="boardType" value="bed_breakfast" checked>
+              <span class="checkbox-mark"></span>
+              <span class="checkbox-label">Oda+Kahvaltı</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" name="boardType" value="half_board">
+              <span class="checkbox-mark"></span>
+              <span class="checkbox-label">Yarım Pansiyon</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" name="boardType" value="full_board">
+              <span class="checkbox-mark"></span>
+              <span class="checkbox-label">Tam Pansiyon</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" name="boardType" value="all_inclusive">
+              <span class="checkbox-mark"></span>
+              <span class="checkbox-label">Her Şey Dahil</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" name="boardType" value="ultra_all_inclusive">
+              <span class="checkbox-mark"></span>
+              <span class="checkbox-label">Ultra Her Şey Dahil</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Discount Row -->
+        <div class="form-row form-row-discount">
+          <div class="form-group">
+            <label for="discountPercent">🏷️ İndirim Oranı (%)</label>
+            <input type="number" id="discountPercent" class="form-input" placeholder="0" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label for="discountReason">İndirim Açıklaması</label>
+            <select id="discountReason" class="form-select">
+              <option value="">İndirim yok</option>
+              <option value="early_booking">Erken Rezervasyon</option>
+              <option value="long_stay">Uzun Konaklama</option>
+              <option value="special_offer">Özel Teklif</option>
+              <option value="other">Diğer</option>
+            </select>
+          </div>
+          <div class="form-group" id="customDiscountGroup" style="display:none">
+            <label for="customDiscountText">Özel Açıklama</label>
+            <input type="text" id="customDiscountText" class="form-input" placeholder="İndirim açıklamasını yazın">
+          </div>
+        </div>
+
+        <!-- Excel Upload -->
+        <div class="form-row form-row-upload">
+          <label class="form-label-full">📁 Excel Dosyası Yükle</label>
+          <div class="file-drop-zone" id="fileDropZone">
+            <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" hidden>
+            <div class="drop-zone-content">
+              <div class="drop-zone-icon">📊</div>
+              <p class="drop-zone-text">Excel dosyanızı buraya sürükleyin</p>
+              <p class="drop-zone-subtext">veya <span class="drop-zone-link">dosya seçmek için tıklayın</span></p>
+              <p class="drop-zone-formats">.xlsx, .xls, .csv</p>
+            </div>
+            <div class="drop-zone-file" id="dropZoneFile" style="display:none">
+              <span class="file-icon">📄</span>
+              <span class="file-name" id="uploadedFileName"></span>
+              <button class="btn-icon file-remove" id="btnRemoveFile" title="Dosyayı kaldır">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Source Selection -->
+        <div class="form-row form-row-sources">
+          <label class="form-label-full">📡 Fiyat Kaynakları</label>
+          <div class="checkbox-group source-checkboxes" id="sourceGroup">
+            <label class="custom-checkbox source-cb">
+              <input type="checkbox" name="source" value="excel">
+              <span class="checkbox-mark" style="--cb-color: var(--excel-color)"></span>
+              <span class="checkbox-label">📊 Excel</span>
+            </label>
+            <label class="custom-checkbox source-cb">
+              <input type="checkbox" name="source" value="booking" checked>
+              <span class="checkbox-mark" style="--cb-color: var(--booking-color)"></span>
+              <span class="checkbox-label">🅱️ Booking</span>
+            </label>
+            <label class="custom-checkbox source-cb">
+              <input type="checkbox" name="source" value="expedia" checked>
+              <span class="checkbox-mark" style="--cb-color: var(--expedia-color)"></span>
+              <span class="checkbox-label">✈️ Expedia</span>
+            </label>
+            <label class="custom-checkbox source-cb">
+              <input type="checkbox" name="source" value="hotels" checked>
+              <span class="checkbox-mark" style="--cb-color: var(--hotels-color)"></span>
+              <span class="checkbox-label">🏨 Hotels.com</span>
+            </label>
+            <label class="custom-checkbox source-cb">
+              <input type="checkbox" name="source" value="etstur">
+              <span class="checkbox-mark" style="--cb-color: var(--etstur-color)"></span>
+              <span class="checkbox-label">🌴 ETS Tur</span>
+            </label>
+            <label class="custom-checkbox source-cb">
+              <input type="checkbox" name="source" value="tatilbudur">
+              <span class="checkbox-mark" style="--cb-color: var(--tatilbudur-color)"></span>
+              <span class="checkbox-label">🏖️ Tatilbudur</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Search Button -->
+        <div class="form-row form-row-submit">
+          <button class="btn-primary btn-search" id="btnSearch">
+            <span class="btn-search-icon">🔍</span>
+            <span class="btn-search-text">Fiyatları Getir</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── RESULTS SECTION ─── -->
+    <section class="results-section" id="resultsSection" style="display:none">
+      <!-- Summary Bar -->
+      <div class="results-summary glass-card" id="resultsSummary">
+        <div class="summary-item">
+          <span class="summary-icon">📅</span>
+          <span class="summary-label">Tarihler</span>
+          <span class="summary-value" id="summaryDates">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon">🌙</span>
+          <span class="summary-label">Gece</span>
+          <span class="summary-value" id="summaryNights">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon">👤</span>
+          <span class="summary-label">Misafir</span>
+          <span class="summary-value" id="summaryGuests">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon">💱</span>
+          <span class="summary-label">Kur</span>
+          <span class="summary-value" id="summaryRates">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon">🕐</span>
+          <span class="summary-label">Kur Tarihi</span>
+          <span class="summary-value" id="summaryRateDate">—</span>
+        </div>
+      </div>
+
+      <!-- Source Status -->
+      <div class="source-status-bar" id="sourceStatusBar"></div>
+
+      <!-- Room Results -->
+      <div class="results-grid" id="resultsGrid"></div>
+
+      <!-- Exchange Rate Warning -->
+      <div class="exchange-warning glass-card" id="exchangeWarning" style="display:none">
+        <span class="warning-icon">⚠️</span>
+        <p id="exchangeWarningText"></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════ CHILD WIZARD MODAL ═══════════════════ -->
+  <div class="modal-overlay" id="childWizardOverlay">
+    <div class="modal child-wizard-modal">
+      <div class="modal-header">
+        <h2>👶 Çocuk Bilgileri ve Fiyatlandırma</h2>
+        <button class="btn-icon modal-close" id="btnCloseChildWizard">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Child Ages Section -->
+        <div class="wizard-section">
+          <h3>Çocuk Yaşları</h3>
+          <div class="child-ages-grid" id="childAgesGrid"></div>
+        </div>
+
+        <!-- Age Group Pricing Section -->
+        <div class="wizard-section">
+          <h3>Yaş Grubu Fiyatlandırması</h3>
+          <div id="ageGroupsContainer">
+            <!-- Age groups rendered dynamically -->
+          </div>
+          <button class="btn-secondary btn-add-age-group" id="btnAddAgeGroup">
+            <span>+</span> Yaş Grubu Ekle
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnChildDefaults">Varsayılan Ayarları Kullan</button>
+        <button class="btn-primary" id="btnApplyChildWizard">Uygula</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ EXCEL COLUMN MAPPING MODAL ═══════════════════ -->
+  <div class="modal-overlay" id="excelMappingOverlay">
+    <div class="modal excel-mapping-modal">
+      <div class="modal-header">
+        <h2>📊 Excel Sütun Eşleştirme</h2>
+        <button class="btn-icon modal-close" id="btnCloseExcelMapping">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="mapping-hint">
+          💡 Sütun başlıkları otomatik olarak eşleştirilmeye çalışıldı. Lütfen kontrol ediniz ve gerekirse düzeltiniz.
+        </p>
+        <div class="mapping-grid" id="mappingGrid"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelMapping">İptal</button>
+        <button class="btn-primary" id="btnSaveMapping">💾 Eşleştirmeyi Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SHARE MODAL ═══════════════════ -->
+  <div class="modal-overlay" id="shareModalOverlay">
+    <div class="modal share-modal">
+      <div class="modal-header">
+        <h2>📤 Teklif Paylaş</h2>
+        <button class="btn-icon modal-close" id="btnCloseShare">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="share-preview">
+          <h4>Teklif Önizleme</h4>
+          <pre class="share-preview-text" id="sharePreviewText"></pre>
+        </div>
+        <div class="share-multi-select" id="shareMultiSelect" style="display:none">
+          <h4>Birden fazla oda seçin:</h4>
+          <div class="share-room-list" id="shareRoomList"></div>
+        </div>
+        <div class="share-phone-group">
+          <label for="sharePhone">📱 WhatsApp Numarası (opsiyonel)</label>
+          <input type="tel" id="sharePhone" class="form-input" placeholder="+90 5XX XXX XX XX">
+        </div>
+      </div>
+      <div class="modal-footer share-actions">
+        <button class="btn-share btn-whatsapp" id="btnShareWhatsApp">
+          📱 WhatsApp
+        </button>
+        <button class="btn-share btn-email" id="btnShareEmail">
+          ✉️ E-posta
+        </button>
+        <button class="btn-share btn-copy" id="btnShareCopy">
+          📋 Kopyala
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TOAST NOTIFICATION ═══════════════════ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,791 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // ═══════════════════ STATE MANAGEMENT ═══════════════════
+    const AppState = {
+        settings: {
+            hotelName: '',
+            phone: '',
+            hotelUrls: {
+                booking: '',
+                expedia: '',
+                hotels: '',
+                etstur: '',
+                tatilbudur: ''
+            },
+            proxy: '',
+            customOtas: []
+        },
+        childPricing: [
+            { minAge: 0, maxAge: 5, type: 'free', value: 0 },
+            { minAge: 6, maxAge: 11, type: 'percent', value: 50 },
+            { minAge: 12, maxAge: 17, type: 'full', value: 0 }
+        ],
+        searchParams: {
+            checkIn: '',
+            checkOut: '',
+            adults: 2,
+            children: 0,
+            childAges: [],
+            boardTypes: ['bed_breakfast'],
+            discountPercent: 0,
+            discountReason: '',
+            customDiscountText: '',
+            sources: ['booking', 'expedia', 'hotels']
+        },
+        exchangeRates: { date: '-', rates: {} },
+        excelData: { headers: [], rows: [] },
+        columnMapping: {},
+        results: []
+    };
+    // ═══════════════════ UTILS & TOASTS ═══════════════════
+    const formatCurrency = (amount) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
+    const formatDateTr = (dateStr) => {
+        if(!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerText = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    // ═══════════════════ INITIALIZATION & SETTINGS ═══════════════════
+    function initApp() {
+        loadSettings();
+        fetchExchangeRates();
+        setupEventListeners();
+        initDatePickers();
+        updateGuestDisplay();
+    }
+    async function loadSettings() {
+        try {
+            const savedSettings = localStorage.getItem('hqm_settings');
+            if (savedSettings) {
+                AppState.settings = JSON.parse(savedSettings);
+                applySettingsToUI();
+            }
+            const savedChildPricing = localStorage.getItem('hqm_childPricing');
+            if(savedChildPricing) {
+                AppState.childPricing = JSON.parse(savedChildPricing);
+            }
+        } catch (e) {
+            console.error('Error loading settings', e);
+        }
+    }
+    function applySettingsToUI() {
+        document.getElementById('headerHotelName').innerText = AppState.settings.hotelName || 'Otel Adı';
+        document.getElementById('settingsHotelName').value = AppState.settings.hotelName;
+        document.getElementById('settingsPhone').value = AppState.settings.phone;
+        document.getElementById('settingsBookingUrl').value = AppState.settings.hotelUrls.booking;
+        document.getElementById('settingsExpediaUrl').value = AppState.settings.hotelUrls.expedia;
+        document.getElementById('settingsHotelsUrl').value = AppState.settings.hotelUrls.hotels;
+        document.getElementById('settingsEtsUrl').value = AppState.settings.hotelUrls.etstur;
+        document.getElementById('settingsTatilbudurUrl').value = AppState.settings.hotelUrls.tatilbudur;
+        document.getElementById('settingsProxy').value = AppState.settings.proxy || '';
+        
+        // TODO: custom OTAs
+    }
+    async function saveSettings() {
+        AppState.settings.hotelName = document.getElementById('settingsHotelName').value;
+        AppState.settings.phone = document.getElementById('settingsPhone').value;
+        AppState.settings.hotelUrls.booking = document.getElementById('settingsBookingUrl').value;
+        AppState.settings.hotelUrls.expedia = document.getElementById('settingsExpediaUrl').value;
+        AppState.settings.hotelUrls.hotels = document.getElementById('settingsHotelsUrl').value;
+        AppState.settings.hotelUrls.etstur = document.getElementById('settingsEtsUrl').value;
+        AppState.settings.hotelUrls.tatilbudur = document.getElementById('settingsTatilbudurUrl').value;
+        AppState.settings.proxy = document.getElementById('settingsProxy').value;
+        localStorage.setItem('hqm_settings', JSON.stringify(AppState.settings));
+        
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(AppState.settings)
+            });
+            showToast('Ayarlar kaydedildi', 'success');
+            document.getElementById('headerHotelName').innerText = AppState.settings.hotelName || 'Otel Adı';
+            closeSettingsSidebar();
+        } catch (e) {
+            console.error('API save error', e);
+            showToast('Ayarlar yerel olarak kaydedildi', 'success');
+            document.getElementById('headerHotelName').innerText = AppState.settings.hotelName || 'Otel Adı';
+            closeSettingsSidebar();
+        }
+    }
+    // ═══════════════════ EXCHANGE RATES ═══════════════════
+    async function fetchExchangeRates() {
+        try {
+            const res = await fetch('/api/exchange-rates');
+            if (res.ok) {
+                const data = await res.json();
+                AppState.exchangeRates = data;
+                document.getElementById('tickerEUR').innerHTML = `<span class="ticker-flag">🇪🇺</span> EUR <span class="ticker-value">${data.rates.EUR.selling.toFixed(2)}</span>`;
+                document.getElementById('tickerUSD').innerHTML = `<span class="ticker-flag">🇺🇸</span> USD <span class="ticker-value">${data.rates.USD.selling.toFixed(2)}</span>`;
+                document.getElementById('summaryRateDate').innerText = data.date;
+                document.getElementById('exchangeWarningText').innerText = `Fiyatlar ${data.date} tarihli TCMB döviz kurları baz alınarak hesaplanmıştır. Rezervasyon yapıldığı günkü kurdan hesaplama yapılacaktır, fiyatlarda değişiklik olabilir.`;
+                document.getElementById('headerDate').innerText = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+        } catch (e) {
+            console.error('Could not fetch exchange rates', e);
+        }
+    }
+    // ═══════════════════ EVENT LISTENERS & UI ═══════════════════
+    function setupEventListeners() {
+        // Sidebar
+        document.getElementById('btnOpenSettings').addEventListener('click', openSettingsSidebar);
+        document.getElementById('btnCloseSettings').addEventListener('click', closeSettingsSidebar);
+        document.getElementById('sidebarOverlay').addEventListener('click', closeSettingsSidebar);
+        document.getElementById('btnSaveSettings').addEventListener('click', saveSettings);
+        // Steppers
+        document.querySelectorAll('.stepper-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.target.getAttribute('data-target');
+                const isPlus = e.target.classList.contains('stepper-plus');
+                const min = parseInt(e.target.getAttribute('data-min') || 0);
+                const max = parseInt(e.target.getAttribute('data-max') || 10);
+                
+                let val = parseInt(document.getElementById(targetId).innerText);
+                if (isPlus && val < max) val++;
+                if (!isPlus && val > min) val--;
+                
+                document.getElementById(targetId).innerText = val;
+                
+                if (targetId === 'adultCount') AppState.searchParams.adults = val;
+                if (targetId === 'childCount') {
+                    AppState.searchParams.children = val;
+                    if (val > 0 && isPlus) {
+                        openChildWizard();
+                    } else if (val === 0) {
+                        AppState.searchParams.childAges = [];
+                    }
+                }
+            });
+        });
+        // Discount Reason
+        document.getElementById('discountReason').addEventListener('change', (e) => {
+            if (e.target.value === 'other') {
+                document.getElementById('customDiscountGroup').style.display = 'block';
+            } else {
+                document.getElementById('customDiscountGroup').style.display = 'none';
+            }
+        });
+        // Search Button
+        document.getElementById('btnSearch').addEventListener('click', performSearch);
+        // Child Wizard
+        document.getElementById('btnCloseChildWizard').addEventListener('click', closeChildWizard);
+        document.getElementById('btnApplyChildWizard').addEventListener('click', applyChildWizard);
+        document.getElementById('btnChildDefaults').addEventListener('click', applyChildDefaults);
+        // Acenta Ekle
+        const btnAddOta = document.getElementById('btnAddOta');
+        if (btnAddOta) {
+            btnAddOta.addEventListener('click', () => {
+                const container = document.getElementById('customOtaContainer');
+                const id = Date.now();
+                const div = document.createElement('div');
+                div.className = 'form-group custom-ota-item';
+                div.id = `customOta_${id}`;
+                div.innerHTML = `
+                    <label>Özel Acenta Adı ve URL'si</label>
+                    <div style="display:flex; gap:10px; margin-bottom:5px;">
+                        <input type="text" class="form-input custom-ota-name" placeholder="Acenta Adı (örn: Jolly Tur)">
+                        <button class="btn-icon" style="color:var(--error)" onclick="document.getElementById('customOta_${id}').remove()">🗑️</button>
+                    </div>
+                    <input type="url" class="form-input custom-ota-url" placeholder="https://...">
+                `;
+                container.appendChild(div);
+            });
+        }
+        // Excel Upload
+        const dropZone = document.getElementById('fileDropZone');
+        const fileInput = document.getElementById('excelFileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleExcelUpload(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleExcelUpload(e.target.files[0]);
+        });
+        document.getElementById('btnRemoveFile').addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeExcelFile();
+        });
+        // Excel Mapping Modal
+        document.getElementById('btnCloseExcelMapping').addEventListener('click', closeExcelMappingModal);
+        document.getElementById('btnCancelMapping').addEventListener('click', closeExcelMappingModal);
+        document.getElementById('btnSaveMapping').addEventListener('click', saveExcelMapping);
+        // Share Modal
+        document.getElementById('btnCloseShare').addEventListener('click', () => document.getElementById('shareModalOverlay').style.display = 'none');
+        document.getElementById('btnShareWhatsApp').addEventListener('click', shareWhatsApp);
+        document.getElementById('btnShareEmail').addEventListener('click', shareEmail);
+        document.getElementById('btnShareCopy').addEventListener('click', shareCopy);
+    }
+    function initDatePickers() {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const checkOutPicker = flatpickr("#checkoutDate", {
+            locale: "tr",
+            minDate: tomorrow,
+            dateFormat: "Y-m-d",
+            onChange: updateNightCount
+        });
+        flatpickr("#checkinDate", {
+            locale: "tr",
+            minDate: "today",
+            dateFormat: "Y-m-d",
+            defaultDate: today,
+            onChange: (selectedDates) => {
+                const date = selectedDates[0];
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkOutPicker.set("minDate", nextDay);
+                if (checkOutPicker.selectedDates[0] <= date) {
+                    checkOutPicker.setDate(nextDay);
+                }
+                updateNightCount();
+            }
+        });
+        
+        // Initial set
+        checkOutPicker.setDate(tomorrow);
+        updateNightCount();
+    }
+    function updateNightCount() {
+        const checkin = document.getElementById('checkinDate').value;
+        const checkout = document.getElementById('checkoutDate').value;
+        if (checkin && checkout) {
+            const start = new Date(checkin);
+            const end = new Date(checkout);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('nightBadge').innerText = diffDays;
+        }
+    }
+    function updateGuestDisplay() {
+        document.getElementById('adultCount').innerText = AppState.searchParams.adults;
+        document.getElementById('childCount').innerText = AppState.searchParams.children;
+    }
+    // ═══════════════════ SIDEBARS & MODALS ═══════════════════
+    function openSettingsSidebar() {
+        document.getElementById('settingsSidebar').classList.add('open');
+        document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSettingsSidebar() {
+        document.getElementById('settingsSidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+    function openChildWizard() {
+        const grid = document.getElementById('childAgesGrid');
+        grid.innerHTML = '';
+        const count = AppState.searchParams.children;
+        for (let i = 0; i < count; i++) {
+            const currentAge = AppState.searchParams.childAges[i] || 0;
+            grid.innerHTML += `
+                <div class="form-group child-age-item">
+                    <label>Çocuk ${i + 1} Yaşı</label>
+                    <input type="number" class="form-input child-age-input" value="${currentAge}" min="0" max="17">
+                </div>
+            `;
+        }
+        renderAgeGroups();
+        document.getElementById('childWizardOverlay').style.display = 'flex';
+    }
+    function closeChildWizard() {
+        document.getElementById('childWizardOverlay').style.display = 'none';
+    }
+    function renderAgeGroups() {
+        const container = document.getElementById('ageGroupsContainer');
+        container.innerHTML = '';
+        AppState.childPricing.forEach((group, index) => {
+            container.innerHTML += `
+                <div class="age-group-row">
+                    <div class="age-range">
+                        <input type="number" class="form-input age-min" value="${group.minAge}" data-index="${index}"> - 
+                        <input type="number" class="form-input age-max" value="${group.maxAge}" data-index="${index}"> Yaş
+                    </div>
+                    <div class="age-policy">
+                        <select class="form-select policy-type" data-index="${index}">
+                            <option value="free" ${group.type === 'free' ? 'selected' : ''}>Ücretsiz</option>
+                            <option value="percent" ${group.type === 'percent' ? 'selected' : ''}>% İndirimli</option>
+                            <option value="fixed" ${group.type === 'fixed' ? 'selected' : ''}>Sabit Fiyat</option>
+                            <option value="full" ${group.type === 'full' ? 'selected' : ''}>Tam Fiyat</option>
+                        </select>
+                        <input type="number" class="form-input policy-value" value="${group.value}" data-index="${index}" style="display: ${['percent', 'fixed'].includes(group.type) ? 'inline-block' : 'none'}; width: 80px;">
+                    </div>
+                </div>
+            `;
+        });
+        document.querySelectorAll('.policy-type').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = e.target.getAttribute('data-index');
+                const valInput = document.querySelector(`.policy-value[data-index="${idx}"]`);
+                if (['percent', 'fixed'].includes(e.target.value)) {
+                    valInput.style.display = 'inline-block';
+                } else {
+                    valInput.style.display = 'none';
+                }
+            });
+        });
+    }
+    function applyChildWizard() {
+        // Collect ages
+        AppState.searchParams.childAges = [];
+        document.querySelectorAll('.child-age-input').forEach(input => {
+            AppState.searchParams.childAges.push(parseInt(input.value));
+        });
+        // Collect policies
+        AppState.childPricing = [];
+        document.querySelectorAll('.age-group-row').forEach(row => {
+            const minAge = parseInt(row.querySelector('.age-min').value);
+            const maxAge = parseInt(row.querySelector('.age-max').value);
+            const type = row.querySelector('.policy-type').value;
+            const value = parseFloat(row.querySelector('.policy-value').value || 0);
+            AppState.childPricing.push({ minAge, maxAge, type, value });
+        });
+        localStorage.setItem('hqm_childPricing', JSON.stringify(AppState.childPricing));
+        closeChildWizard();
+    }
+    function applyChildDefaults() {
+        AppState.childPricing = [
+            { minAge: 0, maxAge: 5, type: 'free', value: 0 },
+            { minAge: 6, maxAge: 11, type: 'percent', value: 50 },
+            { minAge: 12, maxAge: 17, type: 'full', value: 0 }
+        ];
+        renderAgeGroups();
+    }
+    // ═══════════════════ EXCEL UPLOAD ═══════════════════
+    async function handleExcelUpload(file) {
+        document.getElementById('uploadedFileName').innerText = file.name;
+        document.querySelector('.drop-zone-content').style.display = 'none';
+        document.getElementById('dropZoneFile').style.display = 'flex';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            showToast('Excel işleniyor...', 'info');
+            const res = await fetch('/api/parse-excel', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            AppState.excelData.headers = data.headers;
+            AppState.excelData.rows = data.data;
+            openExcelMappingModal(data.headers, data.suggestedMapping);
+        } catch (e) {
+            console.error('Excel parse error', e);
+            showToast('Excel yüklenirken hata oluştu', 'error');
+            removeExcelFile();
+        }
+    }
+    function removeExcelFile() {
+        document.getElementById('excelFileInput').value = '';
+        document.querySelector('.drop-zone-content').style.display = 'flex';
+        document.getElementById('dropZoneFile').style.display = 'none';
+        AppState.excelData = { headers: [], rows: [] };
+        AppState.columnMapping = {};
+    }
+    function openExcelMappingModal(headers, suggestedMapping) {
+        const grid = document.getElementById('mappingGrid');
+        grid.innerHTML = '';
+        
+        const targetFields = [
+            { id: 'roomType', label: 'Oda Tipi' },
+            { id: 'price', label: 'Fiyat (Gecelik)' },
+            { id: 'boardType', label: 'Pansiyon Tipi' },
+            { id: 'capacity', label: 'Kapasite' },
+            { id: 'features', label: 'Özellikler' }
+        ];
+        headers.forEach((header, index) => {
+            const suggestion = suggestedMapping[index] || '';
+            let optionsHtml = '<option value="">-- Eşleştirme Yapılmayacak --</option>';
+            targetFields.forEach(f => {
+                const selected = suggestion === f.id ? 'selected' : '';
+                optionsHtml += `<option value="${f.id}" ${selected}>${f.label}</option>`;
+            });
+            grid.innerHTML += `
+                <div class="mapping-row">
+                    <div class="mapping-col-name">${header}</div>
+                    <div class="mapping-arrow">→</div>
+                    <div class="mapping-target">
+                        <select class="form-select mapping-select" data-index="${index}">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('excelMappingOverlay').style.display = 'flex';
+    }
+    function closeExcelMappingModal() {
+        document.getElementById('excelMappingOverlay').style.display = 'none';
+    }
+    function saveExcelMapping() {
+        AppState.columnMapping = {};
+        document.querySelectorAll('.mapping-select').forEach(sel => {
+            const val = sel.value;
+            if (val) {
+                AppState.columnMapping[val] = parseInt(sel.getAttribute('data-index'));
+            }
+        });
+        
+        if (!('price' in AppState.columnMapping) || !('roomType' in AppState.columnMapping)) {
+            showToast('Lütfen en az Oda Tipi ve Fiyat alanlarını eşleştirin', 'error');
+            return;
+        }
+        
+        closeExcelMappingModal();
+        showToast('Excel başarıyla eşleştirildi', 'success');
+    }
+    // ═══════════════════ SEARCH ENGINE ═══════════════════
+    function getBoardTypesMap() {
+        return {
+            'room_only': 'Sadece Oda',
+            'bed_breakfast': 'Oda+Kahvaltı',
+            'half_board': 'Yarım Pansiyon',
+            'full_board': 'Tam Pansiyon',
+            'all_inclusive': 'Her Şey Dahil',
+            'ultra_all_inclusive': 'Ultra Her Şey Dahil'
+        };
+    }
+    async function performSearch() {
+        const checkIn = document.getElementById('checkinDate').value;
+        const checkOut = document.getElementById('checkoutDate').value;
+        if (!checkIn || !checkOut) {
+            showToast('Lütfen giriş ve çıkış tarihlerini seçin', 'error');
+            return;
+        }
+        AppState.searchParams.checkIn = checkIn;
+        AppState.searchParams.checkOut = checkOut;
+        AppState.searchParams.discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+        
+        const boardTypes = [];
+        document.querySelectorAll('input[name="boardType"]:checked').forEach(cb => boardTypes.push(cb.value));
+        AppState.searchParams.boardTypes = boardTypes;
+        const sources = [];
+        document.querySelectorAll('input[name="source"]:checked').forEach(cb => sources.push(cb.value));
+        AppState.searchParams.sources = sources;
+        // UI Updates
+        document.getElementById('resultsSection').style.display = 'block';
+        document.getElementById('exchangeWarning').style.display = 'flex';
+        document.getElementById('resultsGrid').innerHTML = '';
+        AppState.results = [];
+        // Summary update
+        document.getElementById('summaryDates').innerText = `${formatDateTr(checkIn)} - ${formatDateTr(checkOut)}`;
+        document.getElementById('summaryNights').innerText = document.getElementById('nightBadge').innerText;
+        
+        let guestStr = `${AppState.searchParams.adults} Yetişkin`;
+        if (AppState.searchParams.children > 0) {
+            guestStr += `, ${AppState.searchParams.children} Çocuk (${AppState.searchParams.childAges.join(', ')})`;
+        }
+        document.getElementById('summaryGuests').innerText = guestStr;
+        
+        const eur = AppState.exchangeRates.rates?.EUR?.selling || 0;
+        const usd = AppState.exchangeRates.rates?.USD?.selling || 0;
+        document.getElementById('summaryRates').innerText = `1€=${eur.toFixed(2)}₺ | 1$=${usd.toFixed(2)}₺`;
+        // Status bar setup
+        const statusBar = document.getElementById('sourceStatusBar');
+        statusBar.innerHTML = '';
+        sources.forEach(src => {
+            statusBar.innerHTML += `
+                <div class="status-item" id="status-${src}">
+                    <span class="status-indicator status-loading"></span>
+                    <span class="status-name">${src.toUpperCase()}</span>
+                    <span class="status-text">Aranıyor...</span>
+                </div>
+            `;
+        });
+        // 1. Process Excel local data if selected
+        if (sources.includes('excel') && AppState.excelData.rows.length > 0) {
+            processExcelData();
+            updateSourceStatus('excel', 'success', `${AppState.results.length} oda bulundu`);
+            renderResults();
+        } else if (sources.includes('excel')) {
+            updateSourceStatus('excel', 'error', `Excel yüklenmedi`);
+        }
+        // 2. Fetch OTA data
+        const otaSources = sources.filter(s => s !== 'excel');
+        if (otaSources.length > 0) {
+            fetchOtaPrices(otaSources);
+        }
+    }
+    function updateSourceStatus(source, state, text) {
+        const el = document.getElementById(`status-${source}`);
+        if (!el) return;
+        const indicator = el.querySelector('.status-indicator');
+        const textEl = el.querySelector('.status-text');
+        indicator.className = `status-indicator status-${state}`;
+        textEl.innerText = text;
+    }
+    function processExcelData() {
+        const map = AppState.columnMapping;
+        if (!('price' in map) || !('roomType' in map)) return;
+        
+        const nights = parseInt(document.getElementById('nightBadge').innerText);
+        const bMap = getBoardTypesMap();
+        const selectedBoards = AppState.searchParams.boardTypes.map(b => bMap[b]);
+        AppState.excelData.rows.forEach(row => {
+            const roomType = row[map.roomType];
+            let price = parseFloat(row[map.price]);
+            if (isNaN(price)) return;
+            
+            const boardType = 'boardType' in map ? row[map.boardType] : selectedBoards[0] || 'Oda+Kahvaltı';
+            const features = 'features' in map ? String(row[map.features]).split(',').map(s=>s.trim()) : [];
+            
+            // Assume price is TRY for Excel unless currency mapped (simplified)
+            
+            AppState.results.push({
+                source: 'excel',
+                roomType,
+                boardType,
+                pricePerNight: price,
+                totalPrice: price * nights,
+                currency: 'TRY',
+                features
+            });
+        });
+    }
+    async function fetchOtaPrices(sources) {
+        try {
+            const reqBody = {
+                sources: sources,
+                hotelUrls: AppState.settings.hotelUrls,
+                checkIn: AppState.searchParams.checkIn,
+                checkOut: AppState.searchParams.checkOut,
+                adults: AppState.searchParams.adults,
+                children: AppState.searchParams.children,
+                childAges: AppState.searchParams.childAges,
+                proxy: AppState.settings.proxy
+            };
+            const response = await fetch('/api/search-prices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqBody)
+            });
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = '';
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop();
+                
+                for (const line of lines) {
+                    if (line.trim().startsWith('data: ')) {
+                        const dataStr = line.trim().replace('data: ', '');
+                        if (!dataStr) continue;
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.type === 'done') continue;
+                            
+                            if (data.status === 'success') {
+                                if(data.rooms && data.rooms.length > 0) {
+                                    data.rooms.forEach(r => {
+                                        r.source = data.source;
+                                        AppState.results.push(r);
+                                    });
+                                    updateSourceStatus(data.source, 'success', `${data.rooms.length} oda bulundu`);
+                                    renderResults();
+                                } else {
+                                    updateSourceStatus(data.source, 'error', `Oda bulunamadı`);
+                                }
+                            } else if (data.status === 'loading') {
+                                // already loading
+                            } else {
+                                updateSourceStatus(data.source, 'error', data.error || 'Hata');
+                                if (data.manualUrl) {
+                                    const el = document.getElementById(`status-${data.source}`);
+                                    el.innerHTML += ` <a href="${data.manualUrl}" target="_blank" style="color:var(--gold)">🔗 Manuel</a>`;
+                                }
+                            }
+                        } catch(e) {
+                            console.error("SSE parse error", e, dataStr);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Fetch OTA error', e);
+        }
+    }
+    // ═══════════════════ RESULTS RENDERING ═══════════════════
+    function renderResults() {
+        const grid = document.getElementById('resultsGrid');
+        grid.innerHTML = '';
+        
+        if (AppState.results.length === 0) return;
+        const nights = parseInt(document.getElementById('nightBadge').innerText);
+        const discountPercent = AppState.searchParams.discountPercent;
+        
+        // Process results: apply discounts and calculate final prices
+        const processedResults = AppState.results.map((room, idx) => {
+            let finalPrice = room.pricePerNight;
+            let originalPrice = room.pricePerNight;
+            
+            if (discountPercent > 0) {
+                finalPrice = originalPrice * (1 - (discountPercent / 100));
+            }
+            
+            return {
+                ...room,
+                _id: idx,
+                finalPrice,
+                originalPrice,
+                finalTotal: finalPrice * nights
+            };
+        });
+        // Sort by final total price
+        processedResults.sort((a, b) => a.finalTotal - b.finalTotal);
+        processedResults.forEach((room, index) => {
+            const isBestPrice = index === 0;
+            const sourceInfo = getSourceInfo(room.source);
+            
+            let priceHtml = '';
+            if (room.finalPrice < room.originalPrice) {
+                priceHtml = `
+                    <div class="price-original"><s>${formatCurrency(room.originalPrice)}</s></div>
+                    <div class="price-discounted">${formatCurrency(room.finalPrice)} <span class="price-night">/gece</span></div>
+                `;
+            } else {
+                priceHtml = `<div class="price-discounted">${formatCurrency(room.finalPrice)} <span class="price-night">/gece</span></div>`;
+            }
+            let featuresHtml = '';
+            if (room.features && room.features.length) {
+                featuresHtml = `<div class="room-features">${room.features.slice(0,4).map(f => `<span class="feature-tag">${f}</span>`).join('')}</div>`;
+            }
+            const cardHtml = `
+                <div class="result-card glass-card ${isBestPrice ? 'best-price' : ''}" style="border-left-color: ${sourceInfo.color}">
+                    ${isBestPrice ? '<div class="best-price-badge">🥇 EN UYGUN</div>' : ''}
+                    <div class="card-header">
+                        <span class="source-badge" style="background:${sourceInfo.color}20; color:${sourceInfo.color}">
+                            ${sourceInfo.icon} ${sourceInfo.name}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="room-name">🛏️ ${room.roomType}</h3>
+                        <div class="board-type">🍽️ ${room.boardType || 'Belirtilmedi'}</div>
+                        ${featuresHtml}
+                        <div class="price-area">
+                            ${priceHtml}
+                            <div class="price-total">💰 Toplam: ${formatCurrency(room.finalTotal)}</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-icon-text btn-action-share" data-id="${room._id}" data-type="whatsapp"><span class="icon">📱</span> WhatsApp</button>
+                        <button class="btn-icon-text btn-action-share" data-id="${room._id}" data-type="email"><span class="icon">✉️</span> Mail</button>
+                        <button class="btn-icon-text btn-action-share" data-id="${room._id}" data-type="copy"><span class="icon">📋</span> Kopyala</button>
+                    </div>
+                </div>
+            `;
+            grid.innerHTML += cardHtml;
+        });
+        // Add event listeners to newly rendered buttons
+        document.querySelectorAll('.btn-action-share').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                const type = e.currentTarget.getAttribute('data-type');
+                const room = processedResults.find(r => r._id === id);
+                if(room) prepareShare(room, type);
+            });
+        });
+    }
+    function getSourceInfo(source) {
+        const map = {
+            'excel': { name: 'Otel Direkt', color: 'var(--excel-color)', icon: '📊' },
+            'booking': { name: 'Booking.com', color: 'var(--booking-color)', icon: '🅱️' },
+            'expedia': { name: 'Expedia', color: 'var(--expedia-color)', icon: '✈️' },
+            'hotels': { name: 'Hotels.com', color: 'var(--hotels-color)', icon: '🏨' },
+            'etstur': { name: 'ETS Tur', color: 'var(--etstur-color)', icon: '🌴' },
+            'tatilbudur': { name: 'Tatilbudur', color: 'var(--tatilbudur-color)', icon: '🏖️' }
+        };
+        return map[source] || { name: source, color: 'var(--gold)', icon: '🌐' };
+    }
+    // ═══════════════════ SHARE MANAGER ═══════════════════
+    let currentShareText = '';
+    function prepareShare(room, type) {
+        const nights = parseInt(document.getElementById('nightBadge').innerText);
+        const checkin = document.getElementById('checkinDate').value;
+        const checkout = document.getElementById('checkoutDate').value;
+        const hotelName = AppState.settings.hotelName || 'Otel';
+        const phone = AppState.settings.phone || '';
+        
+        let guestStr = `${AppState.searchParams.adults} Yetişkin`;
+        if (AppState.searchParams.children > 0) {
+            guestStr += `, ${AppState.searchParams.children} Çocuk (${AppState.searchParams.childAges.join(',')} yaş)`;
+        }
+        let discountStr = '';
+        if (AppState.searchParams.discountPercent > 0) {
+            const reason = document.getElementById('discountReason').options[document.getElementById('discountReason').selectedIndex].text;
+            discountStr = `\n(İndirimli: %${AppState.searchParams.discountPercent} ${reason})`;
+        }
+        const text = `🏨 ${hotelName} - Fiyat Teklifi
+📅 Giriş: ${formatDateTr(checkin)}
+📅 Çıkış: ${formatDateTr(checkout)}
+🌙 ${nights} Gece
+👤 ${guestStr}
+🛏️ Oda: ${room.roomType}
+🍽️ Pansiyon: ${room.boardType || '-'}
+💰 Gecelik: ${formatCurrency(room.finalPrice)}${discountStr}
+💰 Toplam: ${formatCurrency(room.finalTotal)}
+⚠️ Fiyatlar ${AppState.exchangeRates.date || ''} tarihli kurlara göre hesaplanmıştır. Rezervasyon yapıldığı gün kur farkı oluşabilir.
+📞 Bilgi & Rezervasyon: ${phone}`;
+        currentShareText = text;
+        document.getElementById('sharePreviewText').innerText = text;
+        document.getElementById('shareModalOverlay').style.display = 'flex';
+        
+        // Hide/show correct buttons based on quick action
+        if(type === 'whatsapp') {
+            document.getElementById('btnShareEmail').style.display = 'none';
+            document.getElementById('btnShareCopy').style.display = 'none';
+            document.getElementById('btnShareWhatsApp').style.display = 'flex';
+        } else if(type === 'email') {
+            document.getElementById('btnShareWhatsApp').style.display = 'none';
+            document.getElementById('btnShareCopy').style.display = 'none';
+            document.getElementById('btnShareEmail').style.display = 'flex';
+        } else {
+            document.getElementById('btnShareWhatsApp').style.display = 'none';
+            document.getElementById('btnShareEmail').style.display = 'none';
+            document.getElementById('btnShareCopy').style.display = 'flex';
+        }
+    }
+    function shareWhatsApp() {
+        const phone = document.getElementById('sharePhone').value.replace(/[^0-9]/g, '');
+        const encodedText = encodeURIComponent(currentShareText);
+        const url = phone ? `https://wa.me/${phone}?text=${encodedText}` : `https://wa.me/?text=${encodedText}`;
+        window.open(url, '_blank');
+        closeShareModal();
+    }
+    function shareEmail() {
+        const subject = encodeURIComponent(`${AppState.settings.hotelName || 'Otel'} Fiyat Teklifi`);
+        const encodedText = encodeURIComponent(currentShareText);
+        window.open(`mailto:?subject=${subject}&body=${encodedText}`, '_self');
+        closeShareModal();
+    }
+    function shareCopy() {
+        navigator.clipboard.writeText(currentShareText).then(() => {
+            showToast('Teklif panoya kopyalandı', 'success');
+            closeShareModal();
+        });
+    }
+    function closeShareModal() {
+        document.getElementById('shareModalOverlay').style.display = 'none';
+        // Reset buttons display
+        document.querySelectorAll('.btn-share').forEach(b => b.style.display = 'flex');
+    }
+    // Run
+    initApp();
+});

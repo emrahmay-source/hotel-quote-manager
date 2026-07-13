@@ -1,0 +1,20 @@
+{
+  "hotelName": "",
+  "phone": "",
+  "hotelUrls": {
+    "booking": "",
+    "expedia": "https://euro.expedia.net/Antalya-Hotels-Perge-Hotels.h31890425.Hotel-Information?chkin=2026-07-12&chkout=2026-07-13&x_pwa=1&rfrr=HSR&pwa_ts=1783737647050&referrerUrl=aHR0cHM6Ly9ldXJvLmV4cGVkaWEubmV0L0hvdGVsLVNlYXJjaA%3D%3D&useRewards=false&rm1=a2&regionId=481&destination=Antalya%2C+Antalya+Region%2C+T%C3%BCrkiye&destType=MARKET&neighborhoodId=6156904&selected=31890425&latLong=36.886208%2C30.70644&sort=RECOMMENDED&top_dp=213&top_cur=EUR&gclid=Cj0KCQjwsMLSBhD9ARIsAIpUTDqZH3Zpkc8Z9gUz_vQFO4gYtYcMCWjw0p4uTK1ooHWp1EHMmdE1U2EaApwxEALw_wcB&semcid=EU.B.GOOGLE.BD-c-EN.HOTEL&semdtl=a118945608822.b1142769038694.g1kwd-344116075419.e1c.m1Cj0KCQjwsMLSBhD9ARIsAIpUTDqZH3Zpkc8Z9gUz_vQFO4gYtYcMCWjw0p4uTK1ooHWp1EHMmdE1U2EaApwxEALw_wcB.r1a9421eeab2ec223937e9654433a8aa45b9d693224189c0975ecf595dd805281b.c1.j19197799.k1.d1721011782804.h1p.i1.l1.n1.o1.p1.q1.s1.t1.x1.f1.u1.v1.w1&userIntent=&selectedRoomType=321376492&selectedRatePlan=406531013&categorySearch=any_option&searchId=39116975-43bc-4eff-af11-efb5da36d542&startDate=2026-07-12&endDate=2026-07-13",
+    "hotels": "",
+    "etstur": "vzakMQzzveboa&gclid=Cj0KCQjwsMLSBhD9ARIsAIpUTDrGmURSexoxai8EjZbJScveCqf-QkCrVpcVgd5HnCc0lK9aOysVQEIaAp2ZEALw_wcB&check_in=12.07.2026&check_out=13.07.2026&adult_1=2&child_1=0",
+    "tatilbudur": ""
+  },
+  "proxy": "",
+  "customOtas": [],
+  "childPricing": {
+    "enabled": false,
+    "freeUnder": 0,
+    "discountUnder": 0,
+    "discountPercent": 0
+  },
+  "lastColumnMapping": {}
+}
