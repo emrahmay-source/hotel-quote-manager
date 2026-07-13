@@ -379,8 +379,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
             const data = await res.json();
-            AppState.excelData.headers = data.headers;
-            AppState.excelData.rows = data.data;
+
+// Yeni: Excel sekme bilgilerini sakla
+AppState.excelData.sheetNames = data.sheetNames || [];
+AppState.excelData.selectedSheet = data.selectedSheet || null;
+
+// Mevcut bilgiler
+AppState.excelData.headers = data.headers;
+AppState.excelData.rows = data.data;
             openExcelMappingModal(data.headers, data.suggestedMapping);
         } catch (e) {
             console.error('Excel parse error', e);
@@ -392,7 +398,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('excelFileInput').value = '';
         document.querySelector('.drop-zone-content').style.display = 'flex';
         document.getElementById('dropZoneFile').style.display = 'none';
-        AppState.excelData = { headers: [], rows: [] };
+        AppState.excelData = {
+    headers: [],
+    rows: [],
+    sheetNames: [],
+    selectedSheet: null
+};
         AppState.columnMapping = {};
     }
     function openExcelMappingModal(headers, suggestedMapping) {

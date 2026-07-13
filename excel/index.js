@@ -1,9 +1,10 @@
-const standardParser = require('./standard');
+const { createParser } = require('./parser-factory');
 
-function parse(buffer, options = {}) {
-    return standardParser.parse(buffer, options);
+function parseExcel(workbook) {
+    const parser = createParser(workbook);
+    return parser.parse(workbook);
 }
 
 module.exports = {
-    parse
+    parseExcel
 };

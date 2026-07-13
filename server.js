@@ -13,6 +13,7 @@ const expediaScraper = require('./scrapers/expedia');
 const etsturScraper = require('./scrapers/etstur');
 const tatilbudurScraper = require('./scrapers/tatilbudur');
 const hotelsComScraper = require('./scrapers/hotels-com');
+const MatrixParser = require('./excel/matrix-parser');
 // ─── Uygulama Başlatma ──────────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -206,6 +207,11 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
       header: 1,
       defval: ''
     });
+
+    const matrixParser = new MatrixParser();
+    const matrixResult = matrixParser.parse(jsonData);
+
+    console.log(matrixResult);
 
     if (jsonData.length === 0) {
       return res.status(400).json({ error: 'Excel dosyası boş.' });
