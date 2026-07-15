@@ -1,29 +1,65 @@
 'use strict';
 
 const MatrixRoomParser = require('./matrix-room-parser');
+const MatrixPeriodParser = require('./matrix-period-parser');
+const MatrixPriceParser = require('./matrix-price-parser');
 
 class MatrixParser {
 
     parse(rows) {
 
         const roomParser = new MatrixRoomParser();
+        const periodParser = new MatrixPeriodParser();
+        const priceParser = new MatrixPriceParser();
 
         const rooms = roomParser.findRoomRows(rows);
 
-        console.log('========== MATRIX PARSER ==========');
-        console.log('Bulunan odalar:');
+        const periods = periodParser.findPeriods(rows);
 
-        rooms.forEach(room => {
-            console.log(room.roomName);
-        });
+        const prices = priceParser.findPrices(
+            rows,
+            rooms,
+            periods
+        );
 
-        console.log('===================================');
+        const result = [];
+
+        for (const price of prices) {
+
+            const room = rooms.find(r => r.row === price.roomRow);
+
+            if (!room) continue;
+
+            result.push({
+
+                roomType: room.roomName,
+
+                boardType: price.boardType || '',
+
+                period: price.period,
+
+                startDate: price.startDate || '',
+
+                endDate: price.endDate || '',
+
+                currency: price.currency || 'TRY',
+
+                price: price.price,
+
+                features: room.features || []
+
+            });
+
+        }
 
         return {
-            rooms,
-            periods: [],
-            prices: []
+
+            format: 'matrix',
+
+            rooms: result
+
         };
+
     }
 
 }

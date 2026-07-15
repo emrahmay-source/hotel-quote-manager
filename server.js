@@ -1,4 +1,5 @@
 'use strict';
+const { createParser } = require('./excel/parser-factory');
 const express = require('express');
 const multer = require('multer');
 const XLSX = require('xlsx');
@@ -197,8 +198,6 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
       return res.status(400).json({ error: 'Excel dosyasında sayfa bulunamadı.' });
     }
 
-    // Şimdilik ilk sekmeyi kullanıyoruz.
-    // Bir sonraki sprintte kullanıcı seçebilecek.
     const selectedSheet = sheetNames[0];
 
     const sheet = workbook.Sheets[selectedSheet];
@@ -208,10 +207,11 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
       defval: ''
     });
 
-    const matrixParser = new MatrixParser();
-    const matrixResult = matrixParser.parse(jsonData);
+    const parser = createParser(jsonData);
 
-    console.log(matrixResult);
+    const result = parser.parse(jsonData);
+
+    console.log(result);
 
     if (jsonData.length === 0) {
       return res.status(400).json({ error: 'Excel dosyası boş.' });

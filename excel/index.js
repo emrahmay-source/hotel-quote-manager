@@ -1,8 +1,13 @@
+'use strict';
+
 const { createParser } = require('./parser-factory');
 
-function parseExcel(workbook) {
-    const parser = createParser(workbook);
-    return parser.parse(workbook);
+function parseExcel(rows) {
+
+    const parser = createParser(rows);
+
+    return parser.parse(rows);
+
 }
 
 module.exports = {
