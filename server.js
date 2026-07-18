@@ -207,11 +207,15 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
       defval: ''
     });
 
-    const parser = createParser(jsonData);
+  const parser = createParser(jsonData);
 
-    const result = parser.parse(jsonData);
+const result = parser.parse(jsonData);
 
-    console.log(result);
+console.log(result);
+
+if (result.format === 'matrix') {
+    return res.json(result);
+}
 
     if (jsonData.length === 0) {
       return res.status(400).json({ error: 'Excel dosyası boş.' });

@@ -35,7 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
         excelData: { headers: [], rows: [] },
         columnMapping: {},
         results: []
+
     };
+     let checkOutPicker = null;
+
     // ═══════════════════ UTILS & TOASTS ═══════════════════
     const formatCurrency = (amount) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
     const formatDateTr = (dateStr) => {
@@ -56,12 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ═══════════════════ INITIALIZATION & SETTINGS ═══════════════════
     function initApp() {
-        loadSettings();
-        fetchExchangeRates();
-        setupEventListeners();
-        initDatePickers();
-        updateGuestDisplay();
+    loadSettings();
+    fetchExchangeRates();
+    setupEventListeners();
+    initDatePickers();
+    // updateGuestDisplay();
+    renderChildAgeInputs();
     }
+
     async function loadSettings() {
         try {
             const savedSettings = localStorage.getItem('hqm_settings');
@@ -134,6 +139,184 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Could not fetch exchange rates', e);
         }
     }
+
+function initDatePickers() {
+
+    const today = new Date();
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    checkOutPicker = flatpickr("#checkoutDate", {
+        locale: "tr",
+        minDate: tomorrow,
+        dateFormat: "Y-m-d",
+        defaultDate: tomorrow,
+        onChange: () => {
+            updateNightCount();
+        }
+    });
+
+    flatpickr("#checkinDate", {
+        locale: "tr",
+        minDate: "today",
+        dateFormat: "Y-m-d",
+        defaultDate: today,
+
+        onChange: (selectedDates) => {
+
+            const checkInDate = selectedDates[0];
+
+            if (!checkInDate) return;
+
+            // Mevcut gece sayısını koru
+            const currentNights =
+                parseInt(document.getElementById("nightCount").value) || 1;
+
+            // Minimum çıkış = giriş + 1 gün
+const minCheckout = new Date(checkInDate);
+minCheckout.setDate(minCheckout.getDate() + 1);
+
+checkOutPicker.set("minDate", minCheckout);
+
+// En az 1 gece olsun
+const nights = Math.max(1, currentNights);
+
+// Çıkış tarihi = giriş + gece
+const newCheckout = new Date(checkInDate);
+newCheckout.setDate(newCheckout.getDate() + nights);
+
+// Flatpickr'ı güncelle
+checkOutPicker.setDate(newCheckout, false);
+updateNightCount();
+
+            // Badge ve hidden input'u güncelle
+            const nightInput = document.getElementById("nightCount");
+            const badge = document.getElementById("nightBadge");
+
+            if (nightInput) {
+                nightInput.value = currentNights;
+            }
+
+            if (badge) {
+                badge.textContent = currentNights;
+            }
+
+        }
+    });
+
+    // İlk yüklemede varsayılan çıkış tarihi
+    checkOutPicker.setDate(tomorrow, false);
+
+    updateNightCount();
+}
+
+function renderChildAgeInputs() {
+
+    const container = document.getElementById("childAgeContainer");
+    const inputs = document.getElementById("childAgeInputs");
+
+    if (!container || !inputs) return;
+
+    const childCount = AppState.searchParams.children || 0;
+
+    if (childCount === 0) {
+
+        container.style.display = "none";
+        inputs.innerHTML = "";
+        return;
+
+    }
+
+    container.style.display = "block";
+    inputs.innerHTML = "";
+
+    if (!AppState.searchParams.childAges) {
+        AppState.searchParams.childAges = [];
+    }
+
+    for (let i = 0; i < childCount; i++) {
+
+        const age =
+            AppState.searchParams.childAges[i] ?? 5;
+
+        const row = document.createElement("div");
+
+        row.className = "child-age-row";
+
+        row.innerHTML = `
+            <label>👶 Çocuk ${i + 1}</label>
+
+            <input
+                type="number"
+                class="form-input child-age-input"
+                min="0"
+                max="17"
+                value="${age}">
+
+            <span>yaş</span>
+        `;
+
+        row.querySelector("input")
+            .addEventListener("input", function () {
+
+                AppState.searchParams.childAges[i] =
+                    parseInt(this.value) || 0;
+
+            });
+
+        inputs.appendChild(row);
+
+    }
+
+}
+
+function updateNightCount() {
+
+    const checkin = document.getElementById("checkinDate").value;
+    const checkout = document.getElementById("checkoutDate").value;
+
+    if (!checkin || !checkout) return;
+
+    const [y1, m1, d1] = checkin.split("-").map(Number);
+    const [y2, m2, d2] = checkout.split("-").map(Number);
+
+    const start = new Date(y1, m1 - 1, d1);
+    const end   = new Date(y2, m2 - 1, d2);
+
+    const diff = Math.max(
+        1,
+        Math.round((end - start) / 86400000)
+    );
+
+    document.getElementById("nightCount").value = diff;
+    document.getElementById("nightBadge").textContent = diff;
+
+}
+function updateCheckoutFromNightCount() {
+
+    const checkin = document.getElementById("checkinDate").value;
+
+    if (!checkin) return;
+
+    const nights = Math.max(
+        1,
+        parseInt(document.getElementById("nightCount").value) || 1
+    );
+
+    const [y, m, d] = checkin.split("-").map(Number);
+
+    const checkout = new Date(y, m - 1, d);
+    checkout.setDate(checkout.getDate() + nights);
+
+    // Minimum çıkış tarihi = giriş + 1
+checkOutPicker.set("minDate", new Date(y, m - 1, d + 1));
+
+// Çıkış tarihini güncelle
+checkOutPicker.setDate(checkout, false);
+updateNightCount();
+
+}
     // ═══════════════════ EVENT LISTENERS & UI ═══════════════════
     function setupEventListeners() {
         // Sidebar
@@ -156,16 +339,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById(targetId).innerText = val;
                 
                 if (targetId === 'adultCount') AppState.searchParams.adults = val;
-                if (targetId === 'childCount') {
-                    AppState.searchParams.children = val;
-                    if (val > 0 && isPlus) {
-                        openChildWizard();
-                    } else if (val === 0) {
-                        AppState.searchParams.childAges = [];
-                    }
-                }
+               if (targetId === 'childCount') {
+    AppState.searchParams.children = val;
+    renderChildAgeInputs();
+}
             });
         });
+  // Night Selector
+
+document.getElementById("btnNightMinus")?.addEventListener("click", () => {
+
+    const input = document.getElementById("nightCount");
+
+    let value = parseInt(input.value) || 1;
+
+    if (value > 1) {
+
+        value--;
+
+        input.value = value;
+
+        updateCheckoutFromNightCount();
+        updateNightCount();
+
+    }
+
+});
+
+document.getElementById("btnNightPlus")?.addEventListener("click", () => {
+
+    const input = document.getElementById("nightCount");
+
+    let value = parseInt(input.value) || 1;
+
+    value++;
+
+    input.value = value;
+
+    updateCheckoutFromNightCount();
+    updateNightCount();
+
+});
+
+document.getElementById("nightCount")?.addEventListener("input", () => {
+
+    const input = document.getElementById("nightCount");
+
+    let value = parseInt(input.value) || 1;
+
+    if (value < 1) value = 1;
+
+    input.value = value;
+
+    updateCheckoutFromNightCount();
+    updateNightCount();
+
+});
         // Discount Reason
         document.getElementById('discountReason').addEventListener('change', (e) => {
             if (e.target.value === 'other') {
@@ -219,72 +448,28 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             removeExcelFile();
         });
-        // Excel Mapping Modal
-        document.getElementById('btnCloseExcelMapping').addEventListener('click', closeExcelMappingModal);
-        document.getElementById('btnCancelMapping').addEventListener('click', closeExcelMappingModal);
-        document.getElementById('btnSaveMapping').addEventListener('click', saveExcelMapping);
-        // Share Modal
-        document.getElementById('btnCloseShare').addEventListener('click', () => document.getElementById('shareModalOverlay').style.display = 'none');
-        document.getElementById('btnShareWhatsApp').addEventListener('click', shareWhatsApp);
-        document.getElementById('btnShareEmail').addEventListener('click', shareEmail);
-        document.getElementById('btnShareCopy').addEventListener('click', shareCopy);
+       // Excel Mapping & Share Modals
+document.getElementById('btnCloseExcelMapping').addEventListener('click', closeExcelMappingModal);
+document.getElementById('btnCancelMapping').addEventListener('click', closeExcelMappingModal);
+document.getElementById('btnSaveMapping').addEventListener('click', saveExcelMapping);
+document.getElementById('btnCloseShare').addEventListener('click', () => document.getElementById('shareModalOverlay').style.display = 'none');
+document.getElementById('btnShareWhatsApp').addEventListener('click', shareWhatsApp);
+document.getElementById('btnShareEmail').addEventListener('click', shareEmail);
+document.getElementById('btnShareCopy').addEventListener('click', shareCopy);
+    
     }
-    function initDatePickers() {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const checkOutPicker = flatpickr("#checkoutDate", {
-            locale: "tr",
-            minDate: tomorrow,
-            dateFormat: "Y-m-d",
-            onChange: updateNightCount
-        });
-        flatpickr("#checkinDate", {
-            locale: "tr",
-            minDate: "today",
-            dateFormat: "Y-m-d",
-            defaultDate: today,
-            onChange: (selectedDates) => {
-                const date = selectedDates[0];
-                const nextDay = new Date(date);
-                nextDay.setDate(nextDay.getDate() + 1);
-                checkOutPicker.set("minDate", nextDay);
-                if (checkOutPicker.selectedDates[0] <= date) {
-                    checkOutPicker.setDate(nextDay);
-                }
-                updateNightCount();
-            }
-        });
-        
-        // Initial set
-        checkOutPicker.setDate(tomorrow);
-        updateNightCount();
-    }
-    function updateNightCount() {
-        const checkin = document.getElementById('checkinDate').value;
-        const checkout = document.getElementById('checkoutDate').value;
-        if (checkin && checkout) {
-            const start = new Date(checkin);
-            const end = new Date(checkout);
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            document.getElementById('nightBadge').innerText = diffDays;
-        }
-    }
-    function updateGuestDisplay() {
-        document.getElementById('adultCount').innerText = AppState.searchParams.adults;
-        document.getElementById('childCount').innerText = AppState.searchParams.children;
-    }
-    // ═══════════════════ SIDEBARS & MODALS ═══════════════════
-    function openSettingsSidebar() {
-        document.getElementById('settingsSidebar').classList.add('open');
-        document.getElementById('sidebarOverlay').classList.add('open');
-    }
-    function closeSettingsSidebar() {
-        document.getElementById('settingsSidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('open');
-    }
+
+function openSettingsSidebar() {
+    document.getElementById('settingsSidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
+}
+
+function closeSettingsSidebar() {
+    document.getElementById('settingsSidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+}
     function openChildWizard() {
+        console.log("openChildWizard çalıştı");
         const grid = document.getElementById('childAgesGrid');
         grid.innerHTML = '';
         const count = AppState.searchParams.children;
@@ -365,100 +550,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ═══════════════════ EXCEL UPLOAD ═══════════════════
     async function handleExcelUpload(file) {
-        document.getElementById('uploadedFileName').innerText = file.name;
-        document.querySelector('.drop-zone-content').style.display = 'none';
-        document.getElementById('dropZoneFile').style.display = 'flex';
-        
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        try {
-            showToast('Excel işleniyor...', 'info');
-            const res = await fetch('/api/parse-excel', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
 
-// Yeni: Excel sekme bilgilerini sakla
-AppState.excelData.sheetNames = data.sheetNames || [];
-AppState.excelData.selectedSheet = data.selectedSheet || null;
+    document.getElementById('uploadedFileName').innerText = file.name;
+    document.querySelector('.drop-zone-content').style.display = 'none';
+    document.getElementById('dropZoneFile').style.display = 'flex';
 
-// Mevcut bilgiler
-AppState.excelData.headers = data.headers;
-AppState.excelData.rows = data.data;
-            openExcelMappingModal(data.headers, data.suggestedMapping);
-        } catch (e) {
-            console.error('Excel parse error', e);
-            showToast('Excel yüklenirken hata oluştu', 'error');
-            removeExcelFile();
-        }
-    }
-    function removeExcelFile() {
-        document.getElementById('excelFileInput').value = '';
-        document.querySelector('.drop-zone-content').style.display = 'flex';
-        document.getElementById('dropZoneFile').style.display = 'none';
-        AppState.excelData = {
-    headers: [],
-    rows: [],
-    sheetNames: [],
-    selectedSheet: null
-};
-        AppState.columnMapping = {};
-    }
-    function openExcelMappingModal(headers, suggestedMapping) {
-        const grid = document.getElementById('mappingGrid');
-        grid.innerHTML = '';
-        
-        const targetFields = [
-            { id: 'roomType', label: 'Oda Tipi' },
-            { id: 'price', label: 'Fiyat (Gecelik)' },
-            { id: 'boardType', label: 'Pansiyon Tipi' },
-            { id: 'capacity', label: 'Kapasite' },
-            { id: 'features', label: 'Özellikler' }
-        ];
-        headers.forEach((header, index) => {
-            const suggestion = suggestedMapping[index] || '';
-            let optionsHtml = '<option value="">-- Eşleştirme Yapılmayacak --</option>';
-            targetFields.forEach(f => {
-                const selected = suggestion === f.id ? 'selected' : '';
-                optionsHtml += `<option value="${f.id}" ${selected}>${f.label}</option>`;
-            });
-            grid.innerHTML += `
-                <div class="mapping-row">
-                    <div class="mapping-col-name">${header}</div>
-                    <div class="mapping-arrow">→</div>
-                    <div class="mapping-target">
-                        <select class="form-select mapping-select" data-index="${index}">
-                            ${optionsHtml}
-                        </select>
-                    </div>
-                </div>
-            `;
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+
+        showToast('Excel işleniyor...', 'info');
+
+        const res = await fetch('/api/parse-excel', {
+            method: 'POST',
+            body: formData
         });
-        
-        document.getElementById('excelMappingOverlay').style.display = 'flex';
-    }
-    function closeExcelMappingModal() {
-        document.getElementById('excelMappingOverlay').style.display = 'none';
-    }
-    function saveExcelMapping() {
-        AppState.columnMapping = {};
-        document.querySelectorAll('.mapping-select').forEach(sel => {
-            const val = sel.value;
-            if (val) {
-                AppState.columnMapping[val] = parseInt(sel.getAttribute('data-index'));
-            }
-        });
-        
-        if (!('price' in AppState.columnMapping) || !('roomType' in AppState.columnMapping)) {
-            showToast('Lütfen en az Oda Tipi ve Fiyat alanlarını eşleştirin', 'error');
+
+        const data = await res.json();
+
+        // ==========================
+        // MATRIX FORMAT
+        // ==========================
+
+        if (data.format === 'matrix') {
+
+            AppState.excelData.rooms = data.rooms || [];
+
+            showToast(
+                `${AppState.excelData.rooms.length} kayıt bulundu`,
+                'success'
+            );
+
             return;
         }
-        
-        closeExcelMappingModal();
-        showToast('Excel başarıyla eşleştirildi', 'success');
+
+        // ==========================
+        // NORMAL EXCEL
+        // ==========================
+
+        AppState.excelData.sheetNames = data.sheetNames || [];
+        AppState.excelData.selectedSheet = data.selectedSheet || null;
+        AppState.excelData.headers = data.headers || [];
+        AppState.excelData.rows = data.data || [];
+
+        openExcelMappingModal(
+            data.headers,
+            data.suggestedMapping
+        );
+
+    } catch (e) {
+
+        console.error('Excel parse error', e);
+
+        showToast(
+            'Excel yüklenirken hata oluştu',
+            'error'
+        );
+
+        removeExcelFile();
     }
+}
+    
+    function removeExcelFile() {
+        const input = document.getElementById('excelFileInput');
+        if (input) input.value = '';
+        const nameEl = document.getElementById('uploadedFileName');
+        if (nameEl) nameEl.innerText = '';
+        const dropContent = document.querySelector('.drop-zone-content');
+        if (dropContent) dropContent.style.display = 'flex';
+        const dropFile = document.getElementById('dropZoneFile');
+        if (dropFile) dropFile.style.display = 'none';
+        AppState.excelData = { headers: [], rows: [], rooms: [], sheetNames: [], selectedSheet: null };
+        AppState.columnMapping = {};
+    }
+
+    function openExcelMappingModal(headers, suggestedMapping) {
+        const modal = document.getElementById('excelMappingModal');
+        const container = document.getElementById('mappingFieldsContainer');
+        if (!modal || !container) {
+            if (suggestedMapping && typeof suggestedMapping === 'object') {
+                AppState.columnMapping = suggestedMapping;
+                showToast('Excel sütun eşleştirmesi otomatik uygulandı', 'success');
+            }
+            return;
+        }
+        container.innerHTML = '';
+        const fields = [
+            { key: 'roomType', label: 'Oda Tipi', required: true },
+            { key: 'price', label: 'Fiyat', required: true },
+            { key: 'boardType', label: 'Pansiyon', required: false },
+            { key: 'features', label: 'Özellikler', required: false },
+            { key: 'currency', label: 'Para Birimi', required: false }
+        ];
+        fields.forEach(field => {
+            const div = document.createElement('div');
+            div.className = 'form-group';
+            let options = '<option value="">-- Seçiniz --</option>';
+            headers.forEach(h => {
+                const selected = suggestedMapping && suggestedMapping[field.key] === h ? 'selected' : '';
+                options += `<option value="${h}" ${selected}>${h}</option>`;
+            });
+            div.innerHTML = `<label>${field.label}${field.required ? ' <span style="color:var(--error)">*</span>' : ''}</label><select class="form-select mapping-field" data-field="${field.key}">${options}</select>`;
+            container.appendChild(div);
+        });
+        modal.style.display = 'flex';
+    }
+
+    function closeExcelMappingModal() {
+        const modal = document.getElementById('excelMappingModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function saveExcelMapping() {
+        const selects = document.querySelectorAll('.mapping-field');
+        const mapping = {};
+        selects.forEach(sel => {
+            const field = sel.getAttribute('data-field');
+            const value = sel.value;
+            if (value) mapping[field] = value;
+        });
+        if (!mapping.roomType || !mapping.price) {
+            showToast('Oda Tipi ve Fiyat alanları zorunludur', 'error');
+            return;
+        }
+        AppState.columnMapping = mapping;
+        closeExcelMappingModal();
+        showToast('Sütun eşleştirmesi kaydedildi', 'success');
+    }
+
     // ═══════════════════ SEARCH ENGINE ═══════════════════
     function getBoardTypesMap() {
         return {
@@ -517,14 +737,34 @@ AppState.excelData.rows = data.data;
                 </div>
             `;
         });
-        // 1. Process Excel local data if selected
-        if (sources.includes('excel') && AppState.excelData.rows.length > 0) {
-            processExcelData();
-            updateSourceStatus('excel', 'success', `${AppState.results.length} oda bulundu`);
-            renderResults();
-        } else if (sources.includes('excel')) {
-            updateSourceStatus('excel', 'error', `Excel yüklenmedi`);
-        }
+       // 1. Process Excel local data if selected
+if (
+    sources.includes('excel') &&
+    (
+        AppState.excelData.rooms?.length > 0 ||
+        AppState.excelData.rows?.length > 0
+    )
+) {
+
+    processExcelData();
+
+    updateSourceStatus(
+        'excel',
+        'success',
+        `${AppState.results.length} oda bulundu`
+    );
+
+    renderResults();
+
+} else if (sources.includes('excel')) {
+
+    updateSourceStatus(
+        'excel',
+        'error',
+        'Excel yüklenmedi'
+    );
+
+}
         // 2. Fetch OTA data
         const otaSources = sources.filter(s => s !== 'excel');
         if (otaSources.length > 0) {
@@ -539,34 +779,120 @@ AppState.excelData.rows = data.data;
         indicator.className = `status-indicator status-${state}`;
         textEl.innerText = text;
     }
-    function processExcelData() {
-        const map = AppState.columnMapping;
-        if (!('price' in map) || !('roomType' in map)) return;
-        
-        const nights = parseInt(document.getElementById('nightBadge').innerText);
-        const bMap = getBoardTypesMap();
-        const selectedBoards = AppState.searchParams.boardTypes.map(b => bMap[b]);
-        AppState.excelData.rows.forEach(row => {
-            const roomType = row[map.roomType];
-            let price = parseFloat(row[map.price]);
-            if (isNaN(price)) return;
-            
-            const boardType = 'boardType' in map ? row[map.boardType] : selectedBoards[0] || 'Oda+Kahvaltı';
-            const features = 'features' in map ? String(row[map.features]).split(',').map(s=>s.trim()) : [];
-            
-            // Assume price is TRY for Excel unless currency mapped (simplified)
-            
+   function processExcelData() {
+
+    // Her aramada eski sonuçları temizle
+    AppState.results = [];
+
+    // ===========================
+    // MATRIX FORMAT
+    // ===========================
+    if (AppState.excelData.rooms?.length) {
+
+        const nights = parseInt(document.getElementById('nightBadge').innerText) || 1;
+
+        AppState.excelData.rooms.forEach(room => {
+
+            const price =
+                Number(
+                    room.pricePerNight ??
+                    room.price ??
+                    room.totalPrice ??
+                    0
+                );
+
+            if (!price) return;
+
             AppState.results.push({
+
                 source: 'excel',
-                roomType,
-                boardType,
+
+                roomType:
+                    room.roomName ||
+                    room.roomType ||
+                    room.name ||
+                    'Oda',
+
+                boardType:
+                    room.boardType ||
+                    room.board ||
+                    '',
+
                 pricePerNight: price,
+
                 totalPrice: price * nights,
-                currency: 'TRY',
-                features
+
+                currency:
+                    room.currency ||
+                    'TRY',
+
+                features:
+                    room.features || []
+
             });
+
         });
+
+        return;
     }
+
+    // ===========================
+    // ESKİ EXCEL SİSTEMİ
+    // ===========================
+
+    const map = AppState.columnMapping;
+
+    if (!('price' in map) || !('roomType' in map))
+        return;
+
+    const nights = parseInt(document.getElementById('nightBadge').innerText);
+
+    const bMap = getBoardTypesMap();
+
+    const selectedBoards =
+        AppState.searchParams.boardTypes.map(b => bMap[b]);
+
+    AppState.excelData.rows.forEach(row => {
+
+        const roomType = row[map.roomType];
+
+        let price = parseFloat(row[map.price]);
+
+        if (isNaN(price))
+            return;
+
+        const boardType =
+            'boardType' in map
+                ? row[map.boardType]
+                : selectedBoards[0] || 'Oda+Kahvaltı';
+
+        const features =
+            'features' in map
+                ? String(row[map.features]).split(',').map(s => s.trim())
+                : [];
+
+        AppState.results.push({
+
+            source: 'excel',
+
+            roomType,
+
+            boardType,
+
+            pricePerNight: price,
+
+            totalPrice: price * nights,
+
+            currency: 'TRY',
+
+            features
+
+        });
+
+    });
+
+}
+    
     async function fetchOtaPrices(sources) {
         try {
             const reqBody = {

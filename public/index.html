@@ -144,31 +144,94 @@
             <label for="checkoutDate">📅 Çıkış Tarihi</label>
             <input type="text" id="checkoutDate" class="form-input date-input" placeholder="Çıkış tarihi seçin" readonly>
           </div>
-          <div class="form-group night-count-group">
-            <label>🌙 Gece</label>
-            <div class="night-badge" id="nightBadge">0</div>
-          </div>
+     <div class="form-group night-count-group">
+
+    <label for="nightCount">🌙 Gece</label>
+
+    <div class="night-selector">
+
+        <button
+            type="button"
+            id="btnNightMinus"
+            class="night-btn">
+            −
+        </button>
+
+        <div class="night-circle">
+            <span id="nightBadge">1</span>
         </div>
 
-        <!-- Guest Row -->
-        <div class="form-row form-row-guests">
-          <div class="form-group">
-            <label>👤 Yetişkin</label>
-            <div class="stepper">
-              <button class="stepper-btn stepper-minus" data-target="adultCount" data-min="1">−</button>
-              <span class="stepper-value" id="adultCount">2</span>
-              <button class="stepper-btn stepper-plus" data-target="adultCount" data-max="10">+</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>👶 Çocuk</label>
-            <div class="stepper">
-              <button class="stepper-btn stepper-minus" data-target="childCount" data-min="0">−</button>
-              <span class="stepper-value" id="childCount">0</span>
-              <button class="stepper-btn stepper-plus" data-target="childCount" data-max="6">+</button>
-            </div>
-          </div>
+        <button
+            type="button"
+            id="btnNightPlus"
+            class="night-btn">
+            +
+        </button>
+
+    </div>
+
+    <input
+        type="number"
+        id="nightCount"
+        value="1"
+        hidden>
+
+</div>
         </div>
+
+<!-- Guest Row -->
+<div class="form-row form-row-guests">
+
+    <!-- Yetişkin -->
+    <div class="form-group guest-column">
+
+        <label>👤 Yetişkin</label>
+
+        <div class="stepper">
+            <button class="stepper-btn stepper-minus"
+                    data-target="adultCount"
+                    data-min="1">−</button>
+
+            <span class="stepper-value" id="adultCount">2</span>
+
+            <button class="stepper-btn stepper-plus"
+                    data-target="adultCount"
+                    data-max="10">+</button>
+        </div>
+
+    </div>
+
+    <!-- Çocuk -->
+    <div class="form-group guest-column">
+
+        <label>👶 Çocuk</label>
+
+        <div class="stepper">
+            <button class="stepper-btn stepper-minus"
+                    data-target="childCount"
+                    data-min="0">−</button>
+
+            <span class="stepper-value" id="childCount">0</span>
+
+            <button class="stepper-btn stepper-plus"
+                    data-target="childCount"
+                    data-max="6">+</button>
+        </div>
+
+        <!-- Çocuk Yaşları -->
+        <div id="childAgeContainer" style="display:none;">
+
+            <label class="child-age-title">
+                👶 Çocuk Yaşları
+            </label>
+
+            <div id="childAgeInputs"></div>
+
+        </div>
+
+    </div>
+
+</div>
 
         <!-- Board Type -->
         <div class="form-row form-row-board">

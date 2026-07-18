@@ -14,13 +14,25 @@ class MatrixParser {
 
         const rooms = roomParser.findRoomRows(rows);
 
+        console.log('\n========== ROOMS ==========');
+        console.log('Room count:', rooms.length);
+        console.dir(rooms, { depth: null });
+
         const periods = periodParser.findPeriods(rows);
+
+        console.log('\n========== PERIODS ==========');
+        console.log('Period count:', periods.length);
+        console.dir(periods, { depth: null });
 
         const prices = priceParser.findPrices(
             rows,
             rooms,
             periods
         );
+
+        console.log('\n========== PRICES ==========');
+        console.log('Price count:', prices.length);
+        console.dir(prices.slice(0, 20), { depth: null });
 
         const result = [];
 
@@ -51,6 +63,10 @@ class MatrixParser {
             });
 
         }
+
+        console.log('\n========== RESULT ==========');
+        console.log('Result count:', result.length);
+        console.dir(result.slice(0, 20), { depth: null });
 
         return {
 

@@ -573,10 +573,15 @@ body {
 }
 
 /* ─── Night Badge ─── */
-.night-count-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.night-count-group{
+
+    flex:0 0 150px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
 }
 .night-badge {
   width: 52px;
@@ -1571,11 +1576,17 @@ span.flatpickr-weekday {
   .form-row-dates {
     grid-template-columns: 1fr 1fr;
   }
-  .night-count-group {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    gap: 12px;
-  }
+  .night-count-group{
+
+    width:140px;
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;
+    justify-content:flex-end;
+
+}
   .form-row-discount {
     grid-template-columns: 1fr 1fr;
   }
@@ -1645,4 +1656,300 @@ span.flatpickr-weekday {
   .modal {
     margin: 8px;
   }
+}
+
+  /* =======================================================
+   GUEST
+======================================================= */
+
+.form-row-guests{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.guest-card{
+
+    background:var(--bg-card);
+
+    border:1px solid var(--border);
+
+    border-radius:12px;
+
+    padding:16px;
+
+}
+
+.guest-card label{
+
+    display:block;
+
+    margin-bottom:12px;
+
+    font-weight:600;
+
+}
+
+#childAgeContainer{
+
+    margin-top:18px;
+
+    border-top:1px solid var(--border);
+
+    padding-top:15px;
+
+}
+
+.child-age-title{
+
+    font-weight:600;
+
+    margin-bottom:12px;
+
+}
+
+#childAgeInputs{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+}
+
+.child-age-row{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:8px;
+
+}
+
+.child-age-row label{
+
+    width:70px;
+    font-size:13px;
+    color:var(--text-secondary);
+
+}
+
+.child-age-row input{
+
+    width:65px !important;
+    height:34px;
+    text-align:center;
+
+}
+
+.child-age-row span{
+
+    font-size:13px;
+    color:var(--text-secondary);
+
+}
+/* ======================================================
+   GUEST
+====================================================== */
+
+.guest-column{
+    display:flex;
+    flex-direction:column;
+}
+
+#childAgeContainer{
+
+    margin-top:16px;
+
+    padding-top:14px;
+
+    border-top:1px solid var(--border);
+
+}
+
+.child-age-title{
+
+    display:block;
+
+    margin-bottom:12px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:var(--text-primary);
+
+}
+
+#childAgeInputs{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+}
+
+.child-age-row{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.child-age-label{
+
+    width:75px;
+
+    font-size:14px;
+
+    color:var(--text-secondary);
+
+}
+
+.child-age-box{
+
+    width:65px !important;
+
+    text-align:center;
+
+}
+
+.child-age-text{
+
+    font-size:14px;
+
+    color:var(--text-secondary);
+
+}
+/*═══════════════════════════════════════
+    NIGHT SELECTOR
+═══════════════════════════════════════*/
+
+.night-count-group{
+
+    width:140px;
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;
+    justify-content:flex-end;
+
+}
+
+.night-selector{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:10px;
+    margin-top:8px;
+
+}
+
+.night-btn{
+
+    width:38px;
+    height:38px;
+
+    border:none;
+    border-radius:50%;
+
+    background:#2f4057;
+
+    color:#fff;
+
+    font-size:24px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.night-btn:hover{
+
+    background:#415775;
+
+    transform:translateY(-1px);
+
+}
+
+.night-btn:active{
+
+    transform:scale(.92);
+
+}
+
+.night-circle{
+
+    width:68px;
+    height:68px;
+
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+        radial-gradient(circle at 30% 30%,
+        #f7d47c,
+        #c9973f 78%);
+
+    box-shadow:
+        inset 0 2px 8px rgba(255,255,255,.35),
+        0 8px 20px rgba(0,0,0,.18);
+
+}
+
+#nightBadge{
+
+    font-size:28px;
+    font-weight:700;
+    color:#1d2430;
+
+}
+
+.night-circle:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 0 25px rgba(241,192,68,.6),
+        0 0 45px rgba(241,192,68,.35);
+
+}
+
+#nightCount{
+
+    width:100%;
+    height:100%;
+
+    border:none;
+    background:transparent;
+
+    outline:none;
+
+    text-align:center;
+
+    color:#13202e;
+
+    font-size:46px;
+    font-weight:800;
+
+    appearance:textfield;
+}
+
+#nightCount::-webkit-inner-spin-button,
+#nightCount::-webkit-outer-spin-button{
+    display:none;
 }
