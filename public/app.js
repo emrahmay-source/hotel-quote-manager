@@ -551,9 +551,9 @@ function closeSettingsSidebar() {
     // ═══════════════════ EXCEL UPLOAD ═══════════════════
     async function handleExcelUpload(file) {
 
-    document.getElementById('uploadedFileName').innerText = file.name;
-    document.querySelector('.drop-zone-content').style.display = 'none';
-    document.getElementById('dropZoneFile').style.display = 'flex';
+    document.getElementById("fileName").textContent = file.name;
+    document.getElementById("dropPlaceholder").style.display = "none";
+    document.getElementById("dropFile").style.display = "flex";
 
     const formData = new FormData();
     formData.append('file', file);
@@ -615,12 +615,11 @@ function closeSettingsSidebar() {
     function removeExcelFile() {
         const input = document.getElementById('excelFileInput');
         if (input) input.value = '';
-        const nameEl = document.getElementById('uploadedFileName');
-        if (nameEl) nameEl.innerText = '';
-        const dropContent = document.querySelector('.drop-zone-content');
-        if (dropContent) dropContent.style.display = 'flex';
-        const dropFile = document.getElementById('dropZoneFile');
-        if (dropFile) dropFile.style.display = 'none';
+        document.getElementById("fileName").textContent = "";
+
+document.getElementById("dropPlaceholder").style.display = "flex";
+
+document.getElementById("dropFile").style.display = "none";
         AppState.excelData = { headers: [], rows: [], rooms: [], sheetNames: [], selectedSheet: null };
         AppState.columnMapping = {};
     }

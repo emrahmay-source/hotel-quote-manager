@@ -47,7 +47,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 14px;
   scroll-behavior: smooth;
 }
 
@@ -82,8 +82,8 @@ body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+  border-radius: 18px;
+  padding: 14px;
   transition: all var(--transition);
 }
 .glass-card:hover {
@@ -102,8 +102,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
-  height: 64px;
+  padding: 0 20px;
+  height: 40px;
   background: rgba(10, 22, 40, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -116,11 +116,11 @@ body {
   gap: 12px;
 }
 .hotel-logo {
-  font-size: 28px;
+  font-size: 20px;
   line-height: 1;
 }
 .hotel-name {
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--gold-light);
   letter-spacing: 0.3px;
@@ -173,8 +173,8 @@ body {
 
 /* ─── Icon Buttons ─── */
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -322,26 +322,26 @@ body {
    FORM ELEMENTS
    ══════════════════════════════════════════════════════════════ */
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .form-group label {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   letter-spacing: 0.3px;
 }
 
 .form-input, .form-select {
   width: 100%;
-  padding: 10px 14px;
+  padding: 6px 8px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   transition: all var(--transition);
   outline: none;
 }
@@ -426,8 +426,8 @@ body {
 /* ─── Search Button ─── */
 .btn-search {
   width: 100%;
-  padding: 16px 32px;
-  font-size: 1.1rem;
+  padding: 10px 24px;
+  font-size: 1rem;
   border-radius: var(--radius-md);
   position: relative;
   overflow: hidden;
@@ -467,8 +467,8 @@ body {
   gap: 16px;
 }
 .stepper-btn {
-  width: 38px;
-  height: 38px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -476,7 +476,7 @@ body {
   border: 1.5px solid var(--gold-dark);
   background: var(--bg-card);
   color: var(--gold);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
@@ -509,8 +509,8 @@ body {
 .custom-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 6px;
+  padding: 6px 10px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -526,8 +526,8 @@ body {
   display: none;
 }
 .checkbox-mark {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   border-radius: 4px;
   border: 1.5px solid var(--text-muted);
   display: flex;
@@ -539,14 +539,15 @@ body {
 }
 .checkbox-mark::after {
   content: '';
-  width: 10px;
-  height: 6px;
+  width: 7px;  /* %8 yerine net piksel */
+  height: 4px; /* %5 yerine net piksel */
   border-left: 2px solid var(--bg-primary);
   border-bottom: 2px solid var(--bg-primary);
   transform: rotate(-45deg) scale(0);
   transition: transform 0.2s ease;
   position: absolute;
   top: 3px;
+  left: 3px;
 }
 .custom-checkbox input[type="checkbox"]:checked + .checkbox-mark {
   background: var(--gold);
@@ -559,7 +560,7 @@ body {
   color: var(--text-primary);
 }
 .checkbox-label {
-  font-size: 0.84rem;
+  font-size: 0.76rem;
   color: var(--text-secondary);
   font-weight: 500;
   transition: color var(--transition);
@@ -584,119 +585,199 @@ body {
 
 }
 .night-badge {
-  width: 52px;
-  height: 52px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--gold), var(--gold-dark));
   color: var(--bg-primary);
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   box-shadow: 0 0 16px rgba(201, 169, 110, 0.3);
 }
+.file-drop-zone{
 
-/* ─── File Drop Zone ─── */
-.file-drop-zone {
-  border: 2px dashed var(--gold-dark);
-  border-radius: var(--radius-md);
-  padding: 32px;
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition);
-  background: var(--bg-card);
-  position: relative;
-}
-.file-drop-zone:hover {
-  border-color: var(--gold);
-  background: var(--bg-card-hover);
-}
-.file-drop-zone.drag-over {
-  border-color: var(--gold-light);
-  background: rgba(201, 169, 110, 0.08);
-  box-shadow: inset 0 0 30px rgba(201, 169, 110, 0.1), 0 0 20px rgba(201, 169, 110, 0.15);
-}
-.drop-zone-icon {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
-}
-.drop-zone-text {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-.drop-zone-subtext {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-.drop-zone-link {
-  color: var(--gold);
-  text-decoration: underline;
-  cursor: pointer;
-}
-.drop-zone-formats {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 8px;
-  opacity: 0.7;
+    min-height:90px;
+
+    border:2px dashed var(--gold-dark);
+
+    border-radius:12px;
+
+    background:var(--bg-card);
+
+    padding:14px;
+
+    transition:.25s;
+
 }
 
-.drop-zone-file {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 4px;
+.drop-placeholder{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    gap:4px;
+
 }
-.file-icon { font-size: 1.5rem; }
-.file-name {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--gold-light);
+
+.drop-zone-icon{
+
+    font-size:28px;
+
 }
-.file-remove {
-  width: 28px;
-  height: 28px;
-  font-size: 0.8rem;
-  color: var(--error);
-  border-color: rgba(244, 67, 54, 0.3);
+
+.drop-zone-text{
+
+    font-size:.90rem;
+
+    color:var(--text-primary);
+
+    font-weight:600;
+
+}
+
+.drop-zone-subtext{
+
+    font-size:.78rem;
+
+    color:var(--text-secondary);
+
+}
+
+.drop-zone-formats{
+
+    font-size:.70rem;
+
+    color:var(--text-muted);
+
+}
+
+.drop-file{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    min-height:32px;
+
+}
+
+.file-icon{
+
+    font-size:20px;
+
+}
+
+.file-name{
+
+    font-size:.92rem;
+
+    color:var(--gold-light);
+
+    font-weight:600;
+
+}
+
+.file-remove{
+
+    width:30px;
+
+    height:30px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-radius:50%;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    background:transparent;
+
+    color:var(--text-secondary);
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    padding:0;
+
+}
+
+.file-remove:hover{
+
+    color:#ff666b;
+
+    border-color:#ff666b;
+
+    background:rgba(255,107,107,.08);
+
+}
+
+.file-remove svg{
+
+    width:16px;
+
+    height:16px;
+
 }
 
 /* ══════════════════════════════════════════════════════════════
    MAIN CONTENT & SEARCH SECTION
    ══════════════════════════════════════════════════════════════ */
-.main-content {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 40px 24px 80px;
+.main-content{
+    width:100%;
+    max-width:980px;
+    margin:0 auto;
+    padding:10px 20px 40px;
 }
 
-.search-section {
-  margin-bottom: 48px;
+.search-section{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin:0;
 }
-.section-header {
-  margin-bottom: 24px;
+.section-header{
+    width:100%;
+    text-align:center;
+    margin-bottom:6px;
 }
-.section-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+.section-header h2{
+    font-size:15px;
+    font-weight:500;
+    color:var(--text-primary);
+    margin-bottom:0px;
 }
-.section-subtitle {
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  font-weight: 400;
+.section-subtitle{
+    font-size:14px;
+    color:var(--text-secondary);
 }
 
-.search-form {
-  padding: 32px;
+.search-form{
+    width:100%;
+    max-width:900px;
+    margin:0 auto;
+    padding:10px;
 }
 
 .form-row {
-  margin-bottom: 24px;
+  margin-bottom: 6px;
 }
 .form-row:last-child {
   margin-bottom: 0;
@@ -705,22 +786,22 @@ body {
 .form-row-dates {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
-  gap: 20px;
+  gap: 8px;
   align-items: end;
 }
 .form-row-guests {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 12px;
 }
 .form-row-discount {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
+  gap: 10px;
   align-items: end;
 }
 .form-row-sources .checkbox-group {
-  gap: 8px;
+  gap: 6px;
 }
 
 /* ─── Flatpickr Override ─── */
@@ -1616,8 +1697,8 @@ span.flatpickr-weekday {
 
 @media (max-width: 768px) {
   .header-bar {
-    padding: 0 16px;
-    height: 56px;
+    padding: 0 12px;
+    height: 16px;
   }
   .header-center {
     display: none;
@@ -1626,7 +1707,7 @@ span.flatpickr-weekday {
     padding: 24px 12px 60px;
   }
   .search-form {
-    padding: 20px;
+    padding: 16px;
   }
   .form-row-dates {
     grid-template-columns: 1fr;
@@ -1641,7 +1722,7 @@ span.flatpickr-weekday {
     gap: 6px;
   }
   .custom-checkbox {
-    padding: 6px 10px;
+    padding: 4px 8px;
   }
   .checkbox-label {
     font-size: 0.78rem;
@@ -1833,7 +1914,7 @@ span.flatpickr-weekday {
 
 .night-count-group{
 
-    width:140px;
+    width:120px;
 
     display:flex;
     flex-direction:column;
@@ -1849,15 +1930,15 @@ span.flatpickr-weekday {
     align-items:center;
     justify-content:center;
 
-    gap:10px;
-    margin-top:8px;
+    gap:6px;
+    margin-top:4px;
 
 }
 
 .night-btn{
 
-    width:38px;
-    height:38px;
+    width:30px;
+    height:30px;
 
     border:none;
     border-radius:50%;
@@ -1866,7 +1947,7 @@ span.flatpickr-weekday {
 
     color:#fff;
 
-    font-size:24px;
+    font-size:18px;
     font-weight:700;
 
     cursor:pointer;
@@ -1891,8 +1972,8 @@ span.flatpickr-weekday {
 
 .night-circle{
 
-    width:68px;
-    height:68px;
+    width:30px;
+    height:30px;
 
     border-radius:50%;
 
@@ -1913,7 +1994,7 @@ span.flatpickr-weekday {
 
 #nightBadge{
 
-    font-size:28px;
+    font-size:20px;
     font-weight:700;
     color:#1d2430;
 
@@ -1952,4 +2033,50 @@ span.flatpickr-weekday {
 #nightCount::-webkit-inner-spin-button,
 #nightCount::-webkit-outer-spin-button{
     display:none;
+}
+
+/* ======================================================
+   FILE REMOVE BUTTON
+====================================================== */
+
+.file-remove{
+
+    width:30px;
+    height:30px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.08);
+
+    background:transparent;
+    color:var(--text-secondary);
+
+    cursor:pointer;
+
+    transition:all .25s ease;
+
+    padding:0;
+
+}
+
+.file-remove:hover{
+
+    color:#ff6b6b;
+
+    border-color:#ff6b6b;
+
+    background:rgba(255,107,107,.08);
+
+    transform:scale(1.08);
+
+}
+
+.file-remove svg{
+
+    width:16px;
+    height:16px;
+
 }
