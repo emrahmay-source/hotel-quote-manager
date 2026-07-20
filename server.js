@@ -182,6 +182,7 @@ app.get('/api/exchange-rates', async (req, res, next) => {
 });
 // ─── API: Excel Ayrıştırma ──────────────────────────────────────────
 app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
+  console.log("PARSE EXCEL ÇALIŞTI");
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Lütfen bir Excel dosyası yükleyin.' });
@@ -201,7 +202,7 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
     const selectedSheet = sheetNames[0];
 
     const sheet = workbook.Sheets[selectedSheet];
-
+console.log(sheet["G8"]);
     const jsonData = XLSX.utils.sheet_to_json(sheet, {
       header: 1,
       defval: ''
@@ -209,7 +210,7 @@ app.post('/api/parse-excel', upload.single('file'), (req, res, next) => {
 
   const parser = createParser(jsonData);
 
-const result = parser.parse(jsonData);
+const result = parser.parse(jsonData, sheet);
 
 console.log(result);
 

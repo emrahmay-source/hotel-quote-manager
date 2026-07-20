@@ -6,7 +6,7 @@ const MatrixPriceParser = require('./matrix-price-parser');
 
 class MatrixParser {
 
-    parse(rows) {
+    parse(rows, sheet) {
 
         const roomParser = new MatrixRoomParser();
         const periodParser = new MatrixPeriodParser();
@@ -25,10 +25,11 @@ class MatrixParser {
         console.dir(periods, { depth: null });
 
         const prices = priceParser.findPrices(
-            rows,
-            rooms,
-            periods
-        );
+    rows,
+    rooms,
+    periods,
+    sheet
+);
 
         console.log('\n========== PRICES ==========');
         console.log('Price count:', prices.length);

@@ -1,8 +1,10 @@
 'use strict';
 
+const XLSX = require('xlsx');
+
 class MatrixPriceParser {
 
-    findPrices(rows, rooms, periods) {
+    findPrices(rows, rooms, periods, sheet) {
 
         const prices = [];
 
@@ -13,8 +15,16 @@ class MatrixPriceParser {
                 // Her dönem için fiyat tek kolonda
                 const col = period.startColumn;
 
-                const value = room.rowData[col];
+              const value = room.rowData[col];
 
+const cellAddress = XLSX.utils.encode_cell({
+    r: room.row,
+    c: col
+});
+
+const cell = sheet[cellAddress];
+
+console.log(cellAddress, cell);
                 if (
                     value === '' ||
                     value === null ||
@@ -34,9 +44,32 @@ class MatrixPriceParser {
                 }
 
                 // Gece sayıları fiyat değildir.
-                if (numericPrice < 30) {
-                    continue;
-                }
+   if (numericPrice < 30) {
+    continue;
+}
+
+let currency = 'TRY';
+
+if (cell?.w) {
+
+    if (cell.w.includes('€'))
+        currency = 'EUR';
+
+    else if (cell.w.includes('$'))
+        currency = 'USD';
+
+    else if (cell.w.includes('£'))
+        currency = 'GBP';
+
+    else if (cell.w.includes('₺'))
+        currency = 'TRY';
+}
+
+console.log({
+    value,
+    currency,
+    start: period.startDate
+});
 
                 prices.push({
 
@@ -52,7 +85,7 @@ class MatrixPriceParser {
 
                     endDate: period.endDate,
 
-                    currency: period.currency || 'TRY',
+                    currency: currency,
 
                     price: numericPrice
 

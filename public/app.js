@@ -40,7 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
      let checkOutPicker = null;
 
     // ═══════════════════ UTILS & TOASTS ═══════════════════
-    const formatCurrency = (amount) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
+    const formatCurrency = (amount, currency = 'TRY') => {
+
+    return new Intl.NumberFormat('tr-TR', {
+
+        style: 'currency',
+
+        currency: currency
+
+    }).format(amount);
+
+};
     const formatDateTr = (dateStr) => {
         if(!dateStr) return '';
         const d = new Date(dateStr);
@@ -958,98 +968,312 @@ if (
             console.error('Fetch OTA error', e);
         }
     }
-    // ═══════════════════ RESULTS RENDERING ═══════════════════
-    function renderResults() {
-        const grid = document.getElementById('resultsGrid');
-        grid.innerHTML = '';
-        
-        if (AppState.results.length === 0) return;
-        const nights = parseInt(document.getElementById('nightBadge').innerText);
-        const discountPercent = AppState.searchParams.discountPercent;
-        
-        // Process results: apply discounts and calculate final prices
-        const processedResults = AppState.results.map((room, idx) => {
-            let finalPrice = room.pricePerNight;
-            let originalPrice = room.pricePerNight;
-            
-            if (discountPercent > 0) {
-                finalPrice = originalPrice * (1 - (discountPercent / 100));
-            }
-            
-            return {
-                ...room,
-                _id: idx,
-                finalPrice,
-                originalPrice,
-                finalTotal: finalPrice * nights
-            };
+    
+   // ═══════════════════ RESULTS RENDERING V3 ═══════════════════
+
+function renderResults() {
+
+    const grid = document.getElementById("resultsGrid");
+    grid.innerHTML = "";
+
+    if (!AppState.results.length) return;
+console.log("RESULTS =", AppState.results[0]);
+    const nights = parseInt(document.getElementById("nightBadge").innerText);
+
+    const discountPercent = AppState.searchParams.discountPercent || 0;
+
+    const processedResults = AppState.results.map((room, idx) => {
+
+        const originalPrice = Number(room.pricePerNight);
+
+        const finalPrice =
+            discountPercent > 0
+                ? originalPrice * (1 - discountPercent / 100)
+                : originalPrice;
+
+        return {
+            ...room,
+            _id: idx,
+            originalPrice,
+            finalPrice,
+            finalTotal: finalPrice * nights
+        };
+
+    });
+
+    processedResults.sort((a, b) => a.finalTotal - b.finalTotal);
+
+    processedResults.forEach((room, index) => {
+console.log(processedResults[0])
+        const source = getSourceInfo(room.source);
+
+        const isBest = index === 0;
+
+        const checkedTime = new Date().toLocaleTimeString("tr-TR", {
+            hour: "2-digit",
+            minute: "2-digit"
         });
-        // Sort by final total price
-        processedResults.sort((a, b) => a.finalTotal - b.finalTotal);
-        processedResults.forEach((room, index) => {
-            const isBestPrice = index === 0;
-            const sourceInfo = getSourceInfo(room.source);
-            
-            let priceHtml = '';
-            if (room.finalPrice < room.originalPrice) {
-                priceHtml = `
-                    <div class="price-original"><s>${formatCurrency(room.originalPrice)}</s></div>
-                    <div class="price-discounted">${formatCurrency(room.finalPrice)} <span class="price-night">/gece</span></div>
-                `;
-            } else {
-                priceHtml = `<div class="price-discounted">${formatCurrency(room.finalPrice)} <span class="price-night">/gece</span></div>`;
-            }
-            let featuresHtml = '';
-            if (room.features && room.features.length) {
-                featuresHtml = `<div class="room-features">${room.features.slice(0,4).map(f => `<span class="feature-tag">${f}</span>`).join('')}</div>`;
-            }
-            const cardHtml = `
-                <div class="result-card glass-card ${isBestPrice ? 'best-price' : ''}" style="border-left-color: ${sourceInfo.color}">
-                    ${isBestPrice ? '<div class="best-price-badge">🥇 EN UYGUN</div>' : ''}
-                    <div class="card-header">
-                        <span class="source-badge" style="background:${sourceInfo.color}20; color:${sourceInfo.color}">
-                            ${sourceInfo.icon} ${sourceInfo.name}
-                        </span>
-                    </div>
-                    <div class="card-body">
-                        <h3 class="room-name">🛏️ ${room.roomType}</h3>
-                        <div class="board-type">🍽️ ${room.boardType || 'Belirtilmedi'}</div>
-                        ${featuresHtml}
-                        <div class="price-area">
-                            ${priceHtml}
-                            <div class="price-total">💰 Toplam: ${formatCurrency(room.finalTotal)}</div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <button class="btn-icon-text btn-action-share" data-id="${room._id}" data-type="whatsapp"><span class="icon">📱</span> WhatsApp</button>
-                        <button class="btn-icon-text btn-action-share" data-id="${room._id}" data-type="email"><span class="icon">✉️</span> Mail</button>
-                        <button class="btn-icon-text btn-action-share" data-id="${room._id}" data-type="copy"><span class="icon">📋</span> Kopyala</button>
-                    </div>
+
+        const checkedDate = new Date().toLocaleDateString("tr-TR");
+
+        let featuresHtml = "";
+
+        if (room.features && room.features.length) {
+
+            featuresHtml = room.features
+                .slice(0, 4)
+                .map(f => `<span class="feature-tag">${f}</span>`)
+                .join("");
+
+        }
+
+        let priceHtml = "";
+
+        if (room.finalPrice < room.originalPrice) {
+
+            priceHtml = `
+    <div class="price-discounted">
+        ${formatCurrency(room.finalPrice, room.currency)}
+        <span>/gece</span>
+    </div>
+
+
+                <div class="price-discounted">
+                    ${formatCurrency(room.finalPrice, room.currency)}
+                    <span>/gece</span>
                 </div>
             `;
-            grid.innerHTML += cardHtml;
-        });
-        // Add event listeners to newly rendered buttons
-        document.querySelectorAll('.btn-action-share').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = parseInt(e.currentTarget.getAttribute('data-id'));
-                const type = e.currentTarget.getAttribute('data-type');
-                const room = processedResults.find(r => r._id === id);
-                if(room) prepareShare(room, type);
-            });
-        });
-    }
-    function getSourceInfo(source) {
-        const map = {
-            'excel': { name: 'Otel Direkt', color: 'var(--excel-color)', icon: '📊' },
-            'booking': { name: 'Booking.com', color: 'var(--booking-color)', icon: '🅱️' },
-            'expedia': { name: 'Expedia', color: 'var(--expedia-color)', icon: '✈️' },
-            'hotels': { name: 'Hotels.com', color: 'var(--hotels-color)', icon: '🏨' },
-            'etstur': { name: 'ETS Tur', color: 'var(--etstur-color)', icon: '🌴' },
-            'tatilbudur': { name: 'Tatilbudur', color: 'var(--tatilbudur-color)', icon: '🏖️' }
-        };
-        return map[source] || { name: source, color: 'var(--gold)', icon: '🌐' };
-    }
+
+        } else {
+
+           priceHtml = `
+    <div class="price-discounted">
+        ${formatCurrency(room.finalPrice, room.currency)}
+        <span>/gece</span>
+    </div>
+`;
+
+        }
+
+        const cardHtml = `
+        <div class="offer-card glass-card ${isBest ? 'best-price' : ''}">
+
+    ${isBest ? `
+        <div class="best-price-badge">
+            🥇 EN UYGUN
+        </div>
+    ` : ""}
+
+    <div class="offer-main">
+
+        <div class="offer-left">
+
+            <div class="offer-source-logo">
+
+                ${source.icon}
+
+            </div>
+
+            <div class="offer-source-name">
+
+                ${source.name}
+
+            </div>
+
+            <div class="offer-source-type">
+
+                Price Source
+
+            </div>
+
+            <div class="offer-checked">
+Checked ${checkedTime} ${checkedDate}
+</div>
+
+        </div>
+
+        <div class="offer-center">
+
+            <div class="offer-room-name">
+
+                ${room.roomType}
+
+            </div>
+
+            <div class="offer-board">
+
+                ${room.boardType || "Belirtilmedi"}
+
+            </div>
+
+            <div class="room-features">
+
+                ${featuresHtml}
+
+            </div>
+
+        </div>
+
+        <div class="offer-right">
+
+            <div class="offer-price">
+
+                ${priceHtml}
+
+            </div>
+
+            <div class="offer-total">
+
+                ${formatCurrency(room.finalTotal, room.currency)}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="offer-actions">
+
+        <div class="offer-group">
+
+            <button class="btn-icon-text btn-action-share"
+                    data-id="${room._id}"
+                    data-type="whatsapp">
+
+                WhatsApp
+
+            </button>
+
+            <button class="btn-icon-text btn-action-share"
+                    data-id="${room._id}"
+                    data-type="email">
+
+                Mail
+
+            </button>
+
+            <button class="btn-icon-text btn-action-share"
+                    data-id="${room._id}"
+                    data-type="copy">
+
+                Kopyala
+
+            </button>
+
+        </div>
+
+        <div class="offer-divider"></div>
+
+        <div class="offer-group">
+                    <button class="btn-icon-text btn-action-pdf">
+
+                PDF
+
+            </button>
+
+            <button class="btn-icon-text btn-action-print">
+
+                Yazdır
+
+            </button>
+
+            <button class="btn-icon-text btn-action-voucher">
+
+                Voucher
+
+            </button>
+
+            <button class="btn-icon-text btn-action-reservation">
+
+                Rezervasyon
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+`;
+
+grid.innerHTML += cardHtml;
+
+});
+document.querySelectorAll(".btn-action-share").forEach(btn => {
+
+    btn.addEventListener("click", (e) => {
+
+        const id = parseInt(e.currentTarget.dataset.id);
+
+        const type = e.currentTarget.dataset.type;
+
+        const room = processedResults.find(r => r._id === id);
+
+        if (room) {
+
+            prepareShare(room, type);
+
+        }
+
+    });
+
+});
+
+}
+function getSourceInfo(source) {
+
+    const map = {
+
+        excel: {
+            name: "Excel",
+            icon: "📊",
+            color: "#4CAF50"
+        },
+
+        booking: {
+            name: "Booking",
+            icon: "🅱️",
+            color: "#003580"
+        },
+
+        expedia: {
+            name: "Expedia",
+            icon: "✈️",
+            color: "#FFB000"
+        },
+
+        hotels: {
+            name: "Hotels.com",
+            icon: "🏨",
+            color: "#D32F2F"
+        },
+
+        etstur: {
+            name: "ETS",
+            icon: "🌴",
+            color: "#FF9800"
+        },
+
+        tatilbudur: {
+            name: "TatilBudur",
+            icon: "🏖️",
+            color: "#E91E63"
+        }
+
+    };
+
+    return map[source] || {
+
+        name: source,
+
+        icon: "🌐",
+
+        color: "#888"
+
+    };
+
+}
     // ═══════════════════ SHARE MANAGER ═══════════════════
     let currentShareText = '';
     function prepareShare(room, type) {

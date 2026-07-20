@@ -57,23 +57,40 @@ class MatrixPeriodParser {
                 continue;
             }
 
-            periods.push({
+            // fiyat sütununun bir üst satırındaki hücreyi oku
+const currencyRow = rows[dateRowIndex + 1] || [];
 
-                name: `${this.formatDate(lastDate)} - ${this.formatDate(currentDate)}`,
+const currencyCell = String(currencyRow[startColumn] || "").toUpperCase();
 
-                startColumn,
+let currency = "TRY";
 
-                endColumn: col,
+if (currencyCell.includes("€") || currencyCell.includes("EUR")) {
+    currency = "EUR";
+}
+else if (currencyCell.includes("$") || currencyCell.includes("USD")) {
+    currency = "USD";
+}
+else if (currencyCell.includes("£") || currencyCell.includes("GBP")) {
+    currency = "GBP";
+}
 
-                startDate: lastDate,
+periods.push({
 
-                endDate: currentDate,
+    name: `${this.formatDate(lastDate)} - ${this.formatDate(currentDate)}`,
 
-                boardType: '',
+    startColumn,
 
-                currency: 'TRY'
+    endColumn: col,
 
-            });
+    startDate: lastDate,
+
+    endDate: currentDate,
+
+    boardType: '',
+
+    currency: this.detectCurrency(rows[dateRowIndex + 2]?.[startColumn]) || "TRY"
+
+});
 
             lastDate = currentDate;
             startColumn = col;
@@ -128,7 +145,17 @@ class MatrixPeriodParser {
         return `${d}.${m}.${y}`;
 
     }
+detectCurrency(cell) {
 
+    const text = String(cell ?? "");
+
+    if (text.includes("€")) return "EUR";
+    if (text.includes("$")) return "USD";
+    if (text.includes("£")) return "GBP";
+    if (text.includes("₺")) return "TRY";
+
+    return null;
+}
 }
 
 module.exports = MatrixPeriodParser;
