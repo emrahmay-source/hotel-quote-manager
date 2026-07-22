@@ -1,3 +1,56 @@
+let previousNightCount = 1;
+ let checkOutPicker = null;
+function updateNightCount() {
+console.log(
+    "updateNightCount",
+    document.getElementById("checkinDate").value,
+    document.getElementById("checkoutDate").value
+);
+    const checkin = document.getElementById("checkinDate").value;
+    const checkout = document.getElementById("checkoutDate").value;
+
+    if (!checkin || !checkout) return;
+
+    const [y1, m1, d1] = checkin.split("-").map(Number);
+    const [y2, m2, d2] = checkout.split("-").map(Number);
+
+    const start = new Date(y1, m1 - 1, d1);
+    const end = new Date(y2, m2 - 1, d2);
+
+    const diff = Math.max(
+        1,
+        Math.round((end - start) / 86400000)
+    );
+
+    document.getElementById("nightCount").value = diff;
+
+    previousNightCount = diff;
+
+}
+function updateCheckoutFromNightCount() {
+    console.log("updateCheckoutFromNightCount başladı");
+    const checkin = document.getElementById("checkinDate").value;
+    if (!checkin) return;
+
+    const nights = Math.max(
+        1,
+        parseInt(document.getElementById("nightCount").value) || 1
+    );
+
+    const [y, m, d] = checkin.split("-").map(Number);
+
+    const checkout = new Date(y, m - 1, d);
+    checkout.setDate(checkout.getDate() + nights);
+console.log(checkout);
+    if (checkOutPicker) {
+        document.getElementById("checkoutDate").value =
+    checkout.getFullYear() + "-" +
+    String(checkout.getMonth() + 1).padStart(2, "0") + "-" +
+    String(checkout.getDate()).padStart(2, "0");
+    }
+console.log("setDate sonrası:", document.getElementById("checkoutDate").value);
+    previousNightCount = nights;
+}
 document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════ STATE MANAGEMENT ═══════════════════
     const AppState = {
@@ -37,7 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
         results: []
 
     };
-     let checkOutPicker = null;
+    
+const nightInput = document.getElementById("nightCount");
+
+nightInput.addEventListener("input", updateCheckoutFromNightCount);
+    console.log("Night input changed");
+
+    updateCheckoutFromNightCount();
+
 
     // ═══════════════════ UTILS & TOASTS ═══════════════════
     const formatCurrency = (amount, currency = 'TRY') => {
@@ -73,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchExchangeRates();
     setupEventListeners();
     initDatePickers();
-    // updateGuestDisplay();
+     updateGuestDisplay();
     renderChildAgeInputs();
     }
 
@@ -151,23 +211,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 function initDatePickers() {
-
+console.count("initDatePickers");
     const today = new Date();
 
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     checkOutPicker = flatpickr("#checkoutDate", {
+
         locale: "tr",
         minDate: tomorrow,
         dateFormat: "Y-m-d",
         defaultDate: tomorrow,
+
         onChange: () => {
+ console.log("CHECKOUT onChange");
             updateNightCount();
+
         }
+
     });
 
     flatpickr("#checkinDate", {
+
         locale: "tr",
         minDate: "today",
         dateFormat: "Y-m-d",
@@ -179,46 +245,29 @@ function initDatePickers() {
 
             if (!checkInDate) return;
 
-            // Mevcut gece sayısını koru
-            const currentNights =
+            const nights =
                 parseInt(document.getElementById("nightCount").value) || 1;
 
-            // Minimum çıkış = giriş + 1 gün
-const minCheckout = new Date(checkInDate);
-minCheckout.setDate(minCheckout.getDate() + 1);
+            const minCheckout = new Date(checkInDate);
+            minCheckout.setDate(minCheckout.getDate() + 1);
 
-checkOutPicker.set("minDate", minCheckout);
+            checkOutPicker.set("minDate", minCheckout);
 
-// En az 1 gece olsun
-const nights = Math.max(1, currentNights);
+            const newCheckout = new Date(checkInDate);
+            newCheckout.setDate(newCheckout.getDate() + nights);
 
-// Çıkış tarihi = giriş + gece
-const newCheckout = new Date(checkInDate);
-newCheckout.setDate(newCheckout.getDate() + nights);
+            checkOutPicker.setDate(newCheckout, false);
 
-// Flatpickr'ı güncelle
-checkOutPicker.setDate(newCheckout, false);
-updateNightCount();
-
-            // Badge ve hidden input'u güncelle
-            const nightInput = document.getElementById("nightCount");
-            const badge = document.getElementById("nightBadge");
-
-            if (nightInput) {
-                nightInput.value = currentNights;
-            }
-
-            if (badge) {
-                badge.textContent = currentNights;
-            }
+            updateNightCount();
 
         }
+
     });
 
-    // İlk yüklemede varsayılan çıkış tarihi
     checkOutPicker.setDate(tomorrow, false);
 
     updateNightCount();
+
 }
 
 function renderChildAgeInputs() {
@@ -281,52 +330,6 @@ function renderChildAgeInputs() {
 
 }
 
-function updateNightCount() {
-
-    const checkin = document.getElementById("checkinDate").value;
-    const checkout = document.getElementById("checkoutDate").value;
-
-    if (!checkin || !checkout) return;
-
-    const [y1, m1, d1] = checkin.split("-").map(Number);
-    const [y2, m2, d2] = checkout.split("-").map(Number);
-
-    const start = new Date(y1, m1 - 1, d1);
-    const end   = new Date(y2, m2 - 1, d2);
-
-    const diff = Math.max(
-        1,
-        Math.round((end - start) / 86400000)
-    );
-
-    document.getElementById("nightCount").value = diff;
-    document.getElementById("nightBadge").textContent = diff;
-
-}
-function updateCheckoutFromNightCount() {
-
-    const checkin = document.getElementById("checkinDate").value;
-
-    if (!checkin) return;
-
-    const nights = Math.max(
-        1,
-        parseInt(document.getElementById("nightCount").value) || 1
-    );
-
-    const [y, m, d] = checkin.split("-").map(Number);
-
-    const checkout = new Date(y, m - 1, d);
-    checkout.setDate(checkout.getDate() + nights);
-
-    // Minimum çıkış tarihi = giriş + 1
-checkOutPicker.set("minDate", new Date(y, m - 1, d + 1));
-
-// Çıkış tarihini güncelle
-checkOutPicker.setDate(checkout, false);
-updateNightCount();
-
-}
     // ═══════════════════ EVENT LISTENERS & UI ═══════════════════
     function setupEventListeners() {
         // Sidebar
@@ -338,6 +341,7 @@ updateNightCount();
         document.querySelectorAll('.stepper-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetId = e.target.getAttribute('data-target');
+                if (!targetId) return;
                 const isPlus = e.target.classList.contains('stepper-plus');
                 const min = parseInt(e.target.getAttribute('data-min') || 0);
                 const max = parseInt(e.target.getAttribute('data-max') || 10);
@@ -358,7 +362,7 @@ updateNightCount();
   // Night Selector
 
 document.getElementById("btnNightMinus")?.addEventListener("click", () => {
-
+console.log("MINUS CLICK");
     const input = document.getElementById("nightCount");
 
     let value = parseInt(input.value) || 1;
@@ -370,7 +374,6 @@ document.getElementById("btnNightMinus")?.addEventListener("click", () => {
         input.value = value;
 
         updateCheckoutFromNightCount();
-        updateNightCount();
 
     }
 
@@ -378,6 +381,7 @@ document.getElementById("btnNightMinus")?.addEventListener("click", () => {
 
 document.getElementById("btnNightPlus")?.addEventListener("click", () => {
 
+    console.log("PLUS ÇALIŞTI");
     const input = document.getElementById("nightCount");
 
     let value = parseInt(input.value) || 1;
@@ -387,22 +391,14 @@ document.getElementById("btnNightPlus")?.addEventListener("click", () => {
     input.value = value;
 
     updateCheckoutFromNightCount();
-    updateNightCount();
 
 });
 
 document.getElementById("nightCount")?.addEventListener("input", () => {
 
-    const input = document.getElementById("nightCount");
-
-    let value = parseInt(input.value) || 1;
-
-    if (value < 1) value = 1;
-
-    input.value = value;
-
     updateCheckoutFromNightCount();
-    updateNightCount();
+
+
 
 });
         // Discount Reason
@@ -723,7 +719,7 @@ document.getElementById("dropFile").style.display = "none";
         AppState.results = [];
         // Summary update
         document.getElementById('summaryDates').innerText = `${formatDateTr(checkIn)} - ${formatDateTr(checkOut)}`;
-        document.getElementById('summaryNights').innerText = document.getElementById('nightBadge').innerText;
+        document.getElementById('summaryNights').innerText = document.getElementById('nightCount').innerText;
         
         let guestStr = `${AppState.searchParams.adults} Yetişkin`;
         if (AppState.searchParams.children > 0) {
@@ -798,7 +794,7 @@ if (
     // ===========================
     if (AppState.excelData.rooms?.length) {
 
-        const nights = parseInt(document.getElementById('nightBadge').innerText) || 1;
+        const nights = parseInt(document.getElementById('nightCount').innerText) || 1;
 
         AppState.excelData.rooms.forEach(room => {
 
@@ -854,7 +850,7 @@ if (
     if (!('price' in map) || !('roomType' in map))
         return;
 
-    const nights = parseInt(document.getElementById('nightBadge').innerText);
+    const nights = parseInt(document.getElementById('nightCount').innerText);
 
     const bMap = getBoardTypesMap();
 
@@ -978,7 +974,7 @@ function renderResults() {
 
     if (!AppState.results.length) return;
 console.log("RESULTS =", AppState.results[0]);
-    const nights = parseInt(document.getElementById("nightBadge").innerText);
+    const nights = parseInt(document.getElementById("nightCount").innerText);
 
     const discountPercent = AppState.searchParams.discountPercent || 0;
 
@@ -1277,7 +1273,7 @@ function getSourceInfo(source) {
     // ═══════════════════ SHARE MANAGER ═══════════════════
     let currentShareText = '';
     function prepareShare(room, type) {
-        const nights = parseInt(document.getElementById('nightBadge').innerText);
+        const nights = parseInt(document.getElementById('nightCount').innerText);
         const checkin = document.getElementById('checkinDate').value;
         const checkout = document.getElementById('checkoutDate').value;
         const hotelName = AppState.settings.hotelName || 'Otel';

@@ -144,39 +144,21 @@
             <label for="checkoutDate">📅 Çıkış Tarihi</label>
             <input type="text" id="checkoutDate" class="form-input date-input" placeholder="Çıkış tarihi seçin" readonly>
           </div>
-     <div class="form-group night-count-group">
+<div class="night-count-group">
 
-    <label for="nightCount">🌙 Gece</label>
+    <label>🌙 Gece</label>
 
     <div class="night-selector">
 
-        <button
-            type="button"
-            id="btnNightMinus"
-            class="night-btn">
-            −
-        </button>
+       <button id="btnNightMinus" class="stepper-btn">−</button>
 
-        <div class="night-circle">
-            <span id="nightBadge">1</span>
-        </div>
-
-        <button
-            type="button"
-            id="btnNightPlus"
-            class="night-btn">
-            +
-        </button>
-
-    </div>
-
-    <input
-        type="number"
-        id="nightCount"
-        value="1"
-        hidden>
-
+<div class="night-circle">
+    <input id="nightCount" type="number" min="1" value="1">
 </div>
+
+<button id="btnNightPlus" class="stepper-btn">+</button>
+        </div>
+        </div>
         </div>
 
 <!-- Guest Row -->

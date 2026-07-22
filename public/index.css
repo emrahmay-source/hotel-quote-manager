@@ -577,12 +577,10 @@ body {
 /* ─── Night Badge ─── */
 .night-count-group{
 
-    flex:0 0 150px;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
+  display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:flex-start;
 
 }
 .night-badge {
@@ -1917,131 +1915,106 @@ span.flatpickr-weekday {
     color:var(--text-secondary);
 
 }
-/*═══════════════════════════════════════
-    NIGHT SELECTOR
-═══════════════════════════════════════*/
+/*=========================
+    NIGHT COUNTER
+=========================*/
 
 .night-count-group{
-
     width:120px;
-
     display:flex;
     flex-direction:column;
-
     align-items:center;
-    justify-content:flex-end;
+    justify-content:flex-start;
+}
 
+.night-label{
+    font-size:14px;
+    color:#9ca8bc;
+    font-weight:600;
+    margin-bottom:2px;
 }
 
 .night-selector{
-
     display:flex;
     align-items:center;
-    justify-content:center;
-
-    gap:6px;
-    margin-top:4px;
-
-}
-
-.night-btn{
-
-    width:30px;
-    height:30px;
-
-    border:none;
-    border-radius:50%;
-
-    background:#2f4057;
-
-    color:#fff;
-
-    font-size:18px;
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.2s;
-
-}
-
-.night-btn:hover{
-
-    background:#415775;
-
-    transform:translateY(-1px);
-
-}
-
-.night-btn:active{
-
-    transform:scale(.92);
-
+    gap:10px;
 }
 
 .night-circle{
-
     width:30px;
     height:30px;
-
+    position:relative;
+    top:-4px;
     border-radius:50%;
 
+    background:linear-gradient(180deg,#d7b16b,#c79d56);
+
+    border:1px solid #d7b16b;
+
+    box-shadow:
+        inset 0 2px 5px rgba(255,255,255,.18),
+        0 8px 18px rgba(0,0,0,.25);
+
     display:flex;
-    justify-content:center;
     align-items:center;
-
-    background:
-        radial-gradient(circle at 30% 30%,
-        #f7d47c,
-        #c9973f 78%);
-
-    box-shadow:
-        inset 0 2px 8px rgba(255,255,255,.35),
-        0 8px 20px rgba(0,0,0,.18);
-
+    justify-content:center;
 }
 
-#nightBadge{
-
-    font-size:20px;
-    font-weight:700;
-    color:#1d2430;
-
-}
-
-.night-circle:hover{
-
-    transform:translateY(-2px);
-
-    box-shadow:
-        0 0 25px rgba(241,192,68,.6),
-        0 0 45px rgba(241,192,68,.35);
-
-}
-
-#nightCount{
-
+.night-circle input{
     width:100%;
     height:100%;
-
-    border:none;
+    margin-top:0;
     background:transparent;
-
+    border:none;
     outline:none;
 
     text-align:center;
 
-    color:#13202e;
-
-    font-size:46px;
-    font-weight:800;
-
-    appearance:textfield;
+    color:#0A1628;      /* Butondaki yazı rengi */
+    font-size:20px;
+    font-weight:700;
+    font-family:inherit;
 }
 
-#nightCount::-webkit-inner-spin-button,
-#nightCount::-webkit-outer-spin-button{
+.night-circle input::-webkit-inner-spin-button,
+.night-circle input::-webkit-outer-spin-button{
     display:none;
+}
+
+.night-selector .guest-btn{
+
+    width:34px;
+    height:34px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(255,210,120,.55);
+
+    background:#354662;
+
+    color:#ffffff;
+
+    font-size:22px;
+    font-weight:700;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.18s;
+
+}
+
+.night-selector .guest-btn:hover{
+
+    background:#44567a;
+
+}
+.night-btn{
+    position:relative;
+    top:-8px;
 }
 
 /* ======================================================
@@ -2185,5 +2158,53 @@ span.flatpickr-weekday {
     font-size:10px;
 
     opacity:.75;
+
+}
+.night-input{
+
+    width:100%;
+    height:100%;
+
+    border:none;
+    outline:none;
+
+    background:transparent;
+
+    color:#162334;
+
+    font-size:22px;
+    font-weight:800;
+
+    font-family:'Inter', sans-serif;
+
+    text-align:center;
+
+    line-height:48px;
+
+    padding:0;
+
+    appearance:textfield;
+    -moz-appearance:textfield;
+
+}
+
+.night-input::-webkit-inner-spin-button,
+.night-input::-webkit-outer-spin-button{
+
+    -webkit-appearance:none;
+    margin:0;
+
+}
+.night-count-group label{
+
+    font-size:.95rem;
+
+    font-weight:600;
+
+    color:var(--text-secondary);
+
+    margin-bottom:10px;
+
+    display:block;
 
 }
