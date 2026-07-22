@@ -483,6 +483,8 @@ body {
   transition: all var(--transition);
   line-height: 1;
   user-select: none;
+   position: relative;
+    top: -1px;
 }
 .stepper-btn:hover {
   background: var(--gold);
@@ -1937,14 +1939,16 @@ span.flatpickr-weekday {
 .night-selector{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:12px;
+    position:relative;
+    top:-4px;
 }
 
 .night-circle{
     width:30px;
     height:30px;
     position:relative;
-    top:-4px;
+    top:0px;
     border-radius:50%;
 
     background:linear-gradient(180deg,#d7b16b,#c79d56);
@@ -2196,15 +2200,9 @@ span.flatpickr-weekday {
 
 }
 .night-count-group label{
-
-    font-size:.95rem;
-
-    font-weight:600;
-
-    color:var(--text-secondary);
-
-    margin-bottom:10px;
-
     display:block;
-
+    width:100%;
+    text-align:left;
+    padding-left:20px;   /* yazıyı biraz sola kaydırır */
+    margin-bottom:8px;
 }

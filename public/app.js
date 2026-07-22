@@ -1,11 +1,10 @@
 let previousNightCount = 1;
  let checkOutPicker = null;
 function updateNightCount() {
-console.log(
     "updateNightCount",
     document.getElementById("checkinDate").value,
     document.getElementById("checkoutDate").value
-);
+
     const checkin = document.getElementById("checkinDate").value;
     const checkout = document.getElementById("checkoutDate").value;
 
@@ -28,7 +27,6 @@ console.log(
 
 }
 function updateCheckoutFromNightCount() {
-    console.log("updateCheckoutFromNightCount başladı");
     const checkin = document.getElementById("checkinDate").value;
     if (!checkin) return;
 
@@ -41,14 +39,13 @@ function updateCheckoutFromNightCount() {
 
     const checkout = new Date(y, m - 1, d);
     checkout.setDate(checkout.getDate() + nights);
-console.log(checkout);
+
     if (checkOutPicker) {
         document.getElementById("checkoutDate").value =
     checkout.getFullYear() + "-" +
     String(checkout.getMonth() + 1).padStart(2, "0") + "-" +
     String(checkout.getDate()).padStart(2, "0");
     }
-console.log("setDate sonrası:", document.getElementById("checkoutDate").value);
     previousNightCount = nights;
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -94,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
 const nightInput = document.getElementById("nightCount");
 
 nightInput.addEventListener("input", updateCheckoutFromNightCount);
-    console.log("Night input changed");
 
     updateCheckoutFromNightCount();
 
@@ -211,7 +207,7 @@ nightInput.addEventListener("input", updateCheckoutFromNightCount);
     }
 
 function initDatePickers() {
-console.count("initDatePickers");
+
     const today = new Date();
 
     const tomorrow = new Date(today);
@@ -225,7 +221,7 @@ console.count("initDatePickers");
         defaultDate: tomorrow,
 
         onChange: () => {
- console.log("CHECKOUT onChange");
+ 
             updateNightCount();
 
         }
@@ -362,7 +358,7 @@ function renderChildAgeInputs() {
   // Night Selector
 
 document.getElementById("btnNightMinus")?.addEventListener("click", () => {
-console.log("MINUS CLICK");
+
     const input = document.getElementById("nightCount");
 
     let value = parseInt(input.value) || 1;
@@ -381,7 +377,6 @@ console.log("MINUS CLICK");
 
 document.getElementById("btnNightPlus")?.addEventListener("click", () => {
 
-    console.log("PLUS ÇALIŞTI");
     const input = document.getElementById("nightCount");
 
     let value = parseInt(input.value) || 1;
@@ -973,8 +968,8 @@ function renderResults() {
     grid.innerHTML = "";
 
     if (!AppState.results.length) return;
-console.log("RESULTS =", AppState.results[0]);
-    const nights = parseInt(document.getElementById("nightCount").innerText);
+    const nights =
+    parseInt(document.getElementById("nightCount").value, 10) || 1;
 
     const discountPercent = AppState.searchParams.discountPercent || 0;
 
@@ -1000,7 +995,7 @@ console.log("RESULTS =", AppState.results[0]);
     processedResults.sort((a, b) => a.finalTotal - b.finalTotal);
 
     processedResults.forEach((room, index) => {
-console.log(processedResults[0])
+
         const source = getSourceInfo(room.source);
 
         const isBest = index === 0;
