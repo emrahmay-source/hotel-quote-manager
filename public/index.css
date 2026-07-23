@@ -2206,3 +2206,134 @@ span.flatpickr-weekday {
     padding-left:20px;   /* yazıyı biraz sola kaydırır */
     margin-bottom:8px;
 }
+/* ===========================================
+   OFFER CARD V4
+=========================================== */
+
+.offer-main{
+    display:grid;
+    grid-template-columns:170px 1fr 260px;
+    gap:28px;
+    align-items:center;
+}
+
+.offer-logo{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    padding-right:24px;
+    border-right:1px solid rgba(255,255,255,.08);
+}
+
+.offer-source-logo{
+    font-size:60px;
+}
+
+.offer-source-name{
+    font-size:18px;
+    font-weight:700;
+}
+
+.offer-source-type{
+    opacity:.7;
+    font-size:14px;
+}
+
+.offer-content{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.best-inline{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    width:max-content;
+    padding:8px 18px;
+    border-radius:10px;
+    background:linear-gradient(90deg,#d9b15d,#f3d37f);
+    color:#111;
+    font-weight:700;
+}
+
+.offer-room-name{
+    font-size:42px;
+    font-weight:800;
+    color:#fff;
+}
+
+.offer-board{
+    font-size:22px;
+    color:#d7d7d7;
+}
+
+.room-features{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    margin-top:4px;
+}
+
+.feature-tag{
+    background:none;
+    border:none;
+    color:#d9b15d;
+    padding:0;
+    font-size:15px;
+}
+
+.offer-info-row{
+    display:flex;
+    gap:30px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.08);
+    color:#ddd;
+    font-size:18px;
+}
+
+.offer-price-panel{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    border:2px solid rgba(217,177,93,.5);
+    border-radius:18px;
+    padding:26px;
+    background:linear-gradient(180deg,#17263f,#111b2d);
+    box-shadow:0 0 30px rgba(217,177,93,.15);
+}
+
+.price-big{
+    font-size:64px;
+    font-weight:800;
+    color:#f0c66c;
+    line-height:1;
+}
+
+.price-night{
+    color:#fff;
+    font-size:22px;
+    margin-top:6px;
+}
+
+.offer-price-panel hr{
+    width:100%;
+    margin:26px 0;
+    border:none;
+    border-top:1px solid rgba(255,255,255,.12);
+}
+
+.price-total-label{
+    font-size:16px;
+    color:#bbb;
+    letter-spacing:1px;
+}
+
+.price-total-big{
+    font-size:46px;
+    font-weight:700;
+    color:#fff;
+    margin-top:10px;
+}

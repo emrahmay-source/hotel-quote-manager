@@ -50,7 +50,7 @@ function updateCheckoutFromNightCount() {
 }
 document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════ STATE MANAGEMENT ═══════════════════
-    const AppState = {
+    window.AppState = {
         settings: {
             hotelName: '',
             phone: '',
@@ -107,6 +107,7 @@ nightInput.addEventListener("input", updateCheckoutFromNightCount);
     }).format(amount);
 
 };
+window.formatCurrency = formatCurrency;
     const formatDateTr = (dateStr) => {
         if(!dateStr) return '';
         const d = new Date(dateStr);
@@ -129,7 +130,6 @@ nightInput.addEventListener("input", updateCheckoutFromNightCount);
     fetchExchangeRates();
     setupEventListeners();
     initDatePickers();
-     updateGuestDisplay();
     renderChildAgeInputs();
     }
 
@@ -754,7 +754,7 @@ if (
         `${AppState.results.length} oda bulundu`
     );
 
-    renderResults();
+    renderResultsV4();
 
 } else if (sources.includes('excel')) {
 
@@ -936,7 +936,7 @@ if (
                                         AppState.results.push(r);
                                     });
                                     updateSourceStatus(data.source, 'success', `${data.rooms.length} oda bulundu`);
-                                    renderResults();
+                                    renderResultsV4();;
                                 } else {
                                     updateSourceStatus(data.source, 'error', `Oda bulunamadı`);
                                 }
@@ -995,7 +995,7 @@ function renderResults() {
     processedResults.sort((a, b) => a.finalTotal - b.finalTotal);
 
     processedResults.forEach((room, index) => {
-
+console.log(room);
         const source = getSourceInfo(room.source);
 
         const isBest = index === 0;
@@ -1057,71 +1057,13 @@ function renderResults() {
 
     <div class="offer-main">
 
-        <div class="offer-left">
+    <div class="offer-left">...</div>
 
-            <div class="offer-source-logo">
+    <div class="offer-center">...</div>
 
-                ${source.icon}
+    <div class="offer-right">...</div>
 
-            </div>
-
-            <div class="offer-source-name">
-
-                ${source.name}
-
-            </div>
-
-            <div class="offer-source-type">
-
-                Price Source
-
-            </div>
-
-            <div class="offer-checked">
-Checked ${checkedTime} ${checkedDate}
 </div>
-
-        </div>
-
-        <div class="offer-center">
-
-            <div class="offer-room-name">
-
-                ${room.roomType}
-
-            </div>
-
-            <div class="offer-board">
-
-                ${room.boardType || "Belirtilmedi"}
-
-            </div>
-
-            <div class="room-features">
-
-                ${featuresHtml}
-
-            </div>
-
-        </div>
-
-        <div class="offer-right">
-
-            <div class="offer-price">
-
-                ${priceHtml}
-
-            </div>
-
-            <div class="offer-total">
-
-                ${formatCurrency(room.finalTotal, room.currency)}
-
-            </div>
-
-        </div>
-
-    </div>
 
     <div class="offer-actions">
 
@@ -1265,6 +1207,7 @@ function getSourceInfo(source) {
     };
 
 }
+
     // ═══════════════════ SHARE MANAGER ═══════════════════
     let currentShareText = '';
     function prepareShare(room, type) {
@@ -1339,4 +1282,8 @@ function getSourceInfo(source) {
     }
     // Run
     initApp();
+    //renderResultsV4();
+    window.formatCurrency = formatCurrency;
+    window.formatDateTr = formatDateTr;
+    window.prepareShare = prepareShare;
 });

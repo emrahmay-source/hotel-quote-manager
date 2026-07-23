@@ -1,0 +1,115 @@
+/* ==========================================
+   HQM - PREMIUM UI POLISHING UPGRADES
+   ========================================== */
+
+/* 2. Ortak Arka Plan Değişkeni ve Renk Eşitleme */
+:root {
+    --panel-bg: #1C2636;
+}
+
+/* Tüm panelleri ve sonuç kartlarını tek renk tonuna çekiyoruz */
+.search-panel,
+.summary-panel,
+.offer-card,
+.result-card-v4 {
+    background: var(--panel-bg) !important;
+}
+
+/* 1. Excel Logosu ve Acente Görsel Standartı */
+.source-logo-img {
+    width: 92px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* 3. Kart Gölgelerinin Kapatılması ve İnce Border */
+.offer-card,
+.result-card-v4 {
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 4. Sağdaki Fiyat Paneli ve Altın Glow Efekti */
+.offer-right,
+.price-panel {
+    position: relative;
+    background: #0f1a2a !important;
+    border-left: 1px solid rgba(255, 193, 7, 0.3) !important;
+    padding: 24px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.offer-right::before,
+.price-panel::before {
+    content: "";
+    position: absolute;
+    left: -2px;
+    top: 10%;
+    width: 3px;
+    height: 80%;
+    background: #ffbf2f;
+    filter: blur(6px);
+    pointer-events: none;
+}
+
+/* 5. En Uygun Fiyat Altın Kapsül Etiketi */
+.best-badge,
+.best-price-badge {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, #f6cf69, #c89422) !important;
+    color: #111 !important;
+    padding: 7px 16px !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(200, 148, 34, 0.3);
+    text-transform: uppercase;
+}
+
+/* 6. Aksiyon Barı ve Buton Yükseklikleri (48px / 42px Standartı) */
+.card-actions-bar,
+.offer-actions {
+    height: 58px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    margin-top: 16px !important;
+    padding-top: 16px !important;
+}
+
+.action-btn,
+.btn-action-share,
+.btn-icon-text {
+    height: 42px !important;
+    padding: 0 22px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px !important;
+    transition: all 0.2s ease;
+}
+
+/* Rezervasyon formu butonuna mockup'taki özel vurgu */
+.btn-action-reservation {
+    background: #ffb000 !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+}
+
+/* 7. Oda Başlığı Büyütme (Deluxe Double Room Kontrolü) */
+.room-title-row h2,
+.room-title {
+    font-size: 28px !important; /* Tasarım dengesi için canlıda 28px-32px arası cuk oturacaktır */
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin-bottom: 6px !important;
+}
